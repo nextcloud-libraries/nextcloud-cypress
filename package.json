@@ -5,10 +5,19 @@
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
+  "type": "module",
   "exports": {
+    "./commands": {
+      "import": "./dist/commands/index.js",
+      "require": "./dist/commands/index.cjs"
+    },
+    "./selectors": {
+      "import": "./dist/selectors/index.js",
+      "require": "./dist/selectors/index.cjs"
+    },
     ".": {
-      "import": "./dist/index.esm.js",
-      "require": "./dist/index.js"
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     }
   },
   "files": [
@@ -25,8 +34,8 @@
     "library"
   ],
   "scripts": {
-    "build": "rollup --config rollup.config.js",
-    "build:doc": "typedoc --out dist/doc lib && touch dist/doc/.nojekyll",
+    "build": "rm -rf dist && rollup --config rollup.config.js",
+    "build:doc": "typedoc --out dist/doc lib/commands lib/selectors lib && touch dist/doc/.nojekyll",
     "dev": "echo 'No dev build available, production only' && npm run build",
     "watch": "rollup --config rollup.config.js --watch",
     "test": "jest",
@@ -46,7 +55,6 @@
   },
   "homepage": "https://github.com/nextcloud/nextcloud-cypress",
   "devDependencies": {
-    "@rollup-extras/plugin-clean": "^1.2.3",
     "@rollup/plugin-commonjs": "^22.0.0",
     "@rollup/plugin-node-resolve": "^13.3.0",
     "@rollup/plugin-typescript": "^8.3.2",
@@ -59,7 +67,5 @@
     "tslib": "^2.4.0",
     "typedoc": "^0.22.17",
     "typescript": "^4.7.3"
-  },
-  "dependencies": {
   }
 }

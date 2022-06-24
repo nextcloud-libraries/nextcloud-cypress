@@ -38,12 +38,9 @@ declare global {
 /**
  * Register all existing commands provided by this library
  * You can manually register those commands by importing them
- * @example import { getNc } from '@nextcloud/cypress'
+ * @example import { getNc } from '@nextcloud/cypress/commands'
  *          Cypress.Commands.add('getNc', getNc)
  */
 export const addCommands = function() {
 	Cypress.Commands.add('getNc', getNc)
 }
-
-export * from './commands'
-export * from './selectors'
