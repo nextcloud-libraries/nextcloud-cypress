@@ -37,7 +37,8 @@ declare global {
 
 /**
  * Register all existing commands provided by this library
- * You can manually register those commands by importing them
+ *
+ * You can also manually register those commands by importing them
  * @example import { getNc } from '@nextcloud/cypress/commands'
  *          Cypress.Commands.add('getNc', getNc)
  */

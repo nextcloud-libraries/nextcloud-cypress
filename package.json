@@ -2,10 +2,9 @@
   "name": "@nextcloud/cypress",
   "version": "1.0.0",
   "description": "Nextcloud cypress commands, utils and selectors library",
-  "main": "dist/index.js",
-  "module": "dist/index.esm.js",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "type": "module",
   "exports": {
     "./commands": {
       "import": "./dist/commands/index.js",
@@ -38,9 +37,9 @@
     "build:doc": "typedoc --out dist/doc lib/commands lib/selectors lib && touch dist/doc/.nojekyll",
     "dev": "echo 'No dev build available, production only' && npm run build",
     "watch": "rollup --config rollup.config.js --watch",
-    "test": "jest",
-    "test:watch": "jest --watchAll --verbose true",
-    "test:coverage": "jest --coverage"
+    "test": "jest --passWithNoTests",
+    "test:watch": "jest --watchAll --verbose true --passWithNoTests",
+    "test:coverage": "jest --coverage --passWithNoTests"
   },
   "repository": {
     "type": "git",
