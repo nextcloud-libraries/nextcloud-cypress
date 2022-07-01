@@ -1,5 +1,5 @@
 /**
- * @copyright 2022 John Molakvoæ <skjnldsv@protonmail.com>
+ * @copyright Copyright (c) 2019 John Molakvoæ <skjnldsv@protonmail.com>
  *
  * @author John Molakvoæ <skjnldsv@protonmail.com>
  *
@@ -12,7 +12,7 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
@@ -20,13 +20,4 @@
  *
  */
 
-/**
- * A Selector is a function that returns a cypress get or find chain.
- * You can pass an object to use its data and narrow down
- * tests against the various elements.
- */
-export interface Selector {
-	(args?: Object): Cypress.Chainable<JQuery>
-}
-
-export * from './uploadPicker'
+export const randHash = (): string => Math.random().toString(36).replace(/[^a-z]+/g, '').slice(0, 10)

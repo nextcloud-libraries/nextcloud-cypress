@@ -1,5 +1,5 @@
 {
-  "include": ["./lib/**/*.ts"],
+  "include": ["./**/*.ts"],
   "compilerOptions": {
     "types": ["cypress", "node"],
     "allowSyntheticDefaultImports": true,
