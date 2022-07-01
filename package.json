@@ -39,7 +39,9 @@
     "watch": "rollup --config rollup.config.js --watch",
     "test": "jest --passWithNoTests",
     "test:watch": "jest --watchAll --verbose true --passWithNoTests",
-    "test:coverage": "jest --coverage --passWithNoTests"
+    "test:coverage": "jest --coverage --passWithNoTests",
+    "cypress": "cypress run --e2e",
+    "cypress:gui": "cypress open --e2e"
   },
   "repository": {
     "type": "git",
@@ -57,11 +59,13 @@
     "@rollup/plugin-commonjs": "^22.0.1",
     "@rollup/plugin-node-resolve": "^13.3.0",
     "@rollup/plugin-typescript": "^8.3.2",
+    "@types/dockerode": "^3.3.9",
     "@types/jest": "^28.1.1",
     "cypress": "^10.2.0",
+    "dockerode": "^3.3.2",
     "jest": "^28.1.1",
     "jest-environment-jsdom": "^28.1.1",
-    "rollup": "^2.75.6",
+    "rollup": "^2.75.7",
     "ts-jest": "^28.0.4",
     "tslib": "^2.4.0",
     "typedoc": "^0.22.18",

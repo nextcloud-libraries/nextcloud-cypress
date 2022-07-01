@@ -20,6 +20,7 @@
  *
  */
 import { getNc } from "./commands"
+import { login, logout } from "./commands/sessions"
 import { Selector } from "./selectors"
 
 declare global {
@@ -31,6 +32,16 @@ declare global {
 			 *          cy.getNc(FileRow, { id: fileInfo.id })
 			 */
 			 getNc(selector: Selector, args?: Object): Cypress.Chainable<JQuery<HTMLElement>>
+
+			 /**
+			  * Login on a Nextcloud instance
+			  */
+			 login(user: string, password: string, route?: string): void
+
+			 /**
+			  * Logout from a Nextcloud instance
+			  */
+			 logout(): void
 		}
 	}
 }
@@ -44,4 +55,6 @@ declare global {
  */
 export const addCommands = function() {
 	Cypress.Commands.add('getNc', getNc)
+	Cypress.Commands.add('login', login)
+	Cypress.Commands.add('logout', logout)
 }

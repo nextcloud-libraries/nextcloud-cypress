@@ -1,5 +1,5 @@
 /**
- * @copyright 2022 John Molakvoæ <skjnldsv@protonmail.com>
+ * @copyright Copyright (c) 2022 John Molakvoæ <skjnldsv@protonmail.com>
  *
  * @author John Molakvoæ <skjnldsv@protonmail.com>
  *
@@ -12,7 +12,7 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
@@ -20,13 +20,18 @@
  *
  */
 
-/**
- * A Selector is a function that returns a cypress get or find chain.
- * You can pass an object to use its data and narrow down
- * tests against the various elements.
- */
-export interface Selector {
-	(args?: Object): Cypress.Chainable<JQuery>
-}
+describe('Login and logout', function() {
+	it('Login and see the default files list', function() {
+		cy.visit('/apps/files')
+		cy.url().should('include', '/login')
+		cy.login('admin', 'admin')
+		cy.url().should('include', '/apps/files')
+	})
 
-export * from './uploadPicker'
+	it('Logout and see the login page', function() {
+		cy.visit('/apps/files')
+		cy.url().should('include', '/apps/files')
+		cy.logout()
+		cy.url().should('include', '/login')
+	})
+})

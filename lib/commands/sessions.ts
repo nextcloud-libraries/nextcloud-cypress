@@ -20,13 +20,24 @@
  *
  */
 
-/**
- * A Selector is a function that returns a cypress get or find chain.
- * You can pass an object to use its data and narrow down
- * tests against the various elements.
- */
-export interface Selector {
-	(args?: Object): Cypress.Chainable<JQuery>
+export const login = function(user: string, password: string, route: string = '/apps/files') {
+	cy.clearCookies()
+	Cypress.Cookies.defaults({
+		preserve: /^(oc|nc)/,
+	})
+	cy.visit(route)
+	cy.get('input[name=user]').type(user)
+	cy.get('input[name=password]').type(password)
+	cy.get('form[name=login] input[type=submit]').click()
+	cy.url().should('include', route)
 }
 
-export * from './uploadPicker'
+export const logout = function() {
+	cy.document().then(document => {
+		const tokenElement = document.getElementsByTagName('head')[0]
+		const token = tokenElement.getAttribute('data-requesttoken') || ''
+
+		cy.visit(`/logout?requesttoken=${encodeURIComponent(token)}`)
+		cy.url().should('include', '/login')
+	})
+}
