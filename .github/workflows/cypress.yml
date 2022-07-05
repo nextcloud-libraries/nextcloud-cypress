@@ -41,15 +41,15 @@ jobs:
       - name: Set up npm ${{ steps.versions.outputs.npmVersion }}
         run: npm i -g npm@"${{ steps.versions.outputs.npmVersion }}"
 
-      - name: Pull images
+      - name: Pull server image
         run: docker pull ghcr.io/nextcloud/continuous-integration-shallow-server
 
-      - name: Start server with ${{ env.BRANCH }}
+      - name: Start server from the ${{ env.BRANCH }} branch
         run: | 
           npm ci
           npm run cypress:server-start
           
-      - name: Cypress
+      - name: Run cypress
         uses: cypress-io/github-action@v4
         with:
           # cypress io
