@@ -44,7 +44,7 @@ jobs:
       - name: Pull images
         run: docker pull ghcr.io/nextcloud/continuous-integration-shallow-server
 
-      - name: Start server
+      - name: Start server with ${{ env.BRANCH }}
         run: | 
           npm ci
           npm run cypress:server-start
