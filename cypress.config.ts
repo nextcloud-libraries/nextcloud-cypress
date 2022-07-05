@@ -1,11 +1,11 @@
 import { defineConfig } from 'cypress'
-import { configureNextcloud, startNextcloud, stopNextcloud } from './cypress/dockerNode'
+import { configureNextcloud, getContainerIP, stopNextcloud } from './cypress/dockerNode'
 
 export default defineConfig({
 	projectId: 'h2z7r3',
 	e2e: {
 		async setupNodeEvents(on, config) {
-			await startNextcloud().then((ip) => {
+			await getContainerIP().then((ip) => {
 				// Setting container's IP as base Url
 				config.baseUrl = `http://${ip}/index.php`
 			})

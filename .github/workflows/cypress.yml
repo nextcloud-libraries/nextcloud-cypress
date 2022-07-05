@@ -8,6 +8,9 @@ on:
       - master
       - stable*
 
+env:
+  BRANCH: ${{ github.base_ref }}
+
 jobs:
   cypress:
     runs-on: ubuntu-latest
@@ -44,6 +47,8 @@ jobs:
       - name: Build and run Cypress
         uses: cypress-io/github-action@v4
         with:
+          # start server first
+          command: npm run cypress -- --record --parallel
           # cypress io
           record: true
           parallel: true
@@ -51,6 +56,8 @@ jobs:
           ci-build-id: ${{ github.sha }}-${{ github.run_number }}
           tag: ${{ github.event_name }}
         env:
+          # Needs to be prefixed with CYPRESS_
+          CYPRESS_BRANCH: ${{ env.BRANCH }}
           # https://github.com/cypress-io/github-action/issues/124
           COMMIT_INFO_MESSAGE: ${{ github.event.pull_request.title }} 
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
