@@ -8,6 +8,9 @@ on:
       - master
       - stable*
 
+env:
+  BRANCH: ${{ github.base_ref }}
+
 jobs:
   cypress:
     runs-on: ubuntu-latest
@@ -40,8 +43,13 @@ jobs:
 
       - name: Pull images
         run: docker pull ghcr.io/nextcloud/continuous-integration-shallow-server
+
+      - name: Start server
+        run: | 
+          npm ci
+          npm run cypress:server-start
           
-      - name: Build and run Cypress
+      - name: Cypress
         uses: cypress-io/github-action@v4
         with:
           # cypress io
@@ -51,6 +59,8 @@ jobs:
           ci-build-id: ${{ github.sha }}-${{ github.run_number }}
           tag: ${{ github.event_name }}
         env:
+          # Needs to be prefixed with CYPRESS_
+          CYPRESS_BRANCH: ${{ env.BRANCH }}
           # https://github.com/cypress-io/github-action/issues/124
           COMMIT_INFO_MESSAGE: ${{ github.event.pull_request.title }} 
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
