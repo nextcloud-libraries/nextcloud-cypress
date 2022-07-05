@@ -43,12 +43,15 @@ jobs:
 
       - name: Pull images
         run: docker pull ghcr.io/nextcloud/continuous-integration-shallow-server
+
+      - name: Start server
+        run: | 
+          npm ci
+          npm run cypress:server-start
           
-      - name: Build and run Cypress
+      - name: Cypress
         uses: cypress-io/github-action@v4
         with:
-          # start server first
-          command: npm run cypress -- --record --parallel
           # cypress io
           record: true
           parallel: true
