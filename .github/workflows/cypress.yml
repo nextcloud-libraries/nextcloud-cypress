@@ -9,7 +9,7 @@ on:
       - stable*
 
 env:
-  BRANCH: ${{ github.base_ref }}
+  BRANCH: ${{ github.base_ref || 'master' }}
 
 jobs:
   cypress:
