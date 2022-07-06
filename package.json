@@ -34,7 +34,7 @@
   ],
   "scripts": {
     "build": "rm -rf dist && rollup --config rollup.config.js",
-    "build:doc": "typedoc --out dist/doc lib/commands lib/selectors lib/index.ts && touch dist/doc/.nojekyll",
+    "build:doc": "typedoc --out dist/doc lib/commands lib/selectors lib && touch dist/doc/.nojekyll",
     "dev": "echo 'No dev build available, production only' && npm run build",
     "watch": "rollup --config rollup.config.js --watch",
     "test": "jest --passWithNoTests",

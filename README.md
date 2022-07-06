@@ -1,4 +1,4 @@
-# @nextcloud/cypress [![npm last version](https://img.shields.io/npm/v/@nextcloud/cypress.svg?style=flat-square)](https://www.npmjs.com/package/@nextcloud/cypress) ![Codecov](https://img.shields.io/codecov/c/github/nextcloud/nextcloud-cypress?style=flat-square)
+# \@nextcloud/cypress [![npm last version](https://img.shields.io/npm/v/@nextcloud/cypress.svg?style=flat-square)](https://www.npmjs.com/package/@nextcloud/cypress) ![Codecov](https://img.shields.io/codecov/c/github/nextcloud/nextcloud-cypress?style=flat-square)
 
 Nextcloud cypress helpers for Nextcloud apps and libraries
 
