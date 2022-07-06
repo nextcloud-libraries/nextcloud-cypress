@@ -1,4 +1,4 @@
-import * as Docker from 'dockerode'
+import Docker from 'dockerode'
 
 const docker = new Docker()
 const CONTAINER_NAME = 'nextcloud-cypress-tests'
