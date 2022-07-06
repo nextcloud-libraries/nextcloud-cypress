@@ -1,4 +1,5 @@
 {
+	"extends": "@vue/tsconfig/tsconfig.json",
 	"include": ["./**/*.ts"],
 	"compilerOptions": {
 		"types": ["cypress", "node"],

@@ -1,8 +1,37 @@
+// Making sure we're forcing the development mode
+process.env.NODE_ENV = 'development'
+process.env.npm_package_name = 'nextcloud-cypress'
+
+import { configureNextcloud,  getContainerIP,  stopNextcloud } from './cypress/dockerNode'
 import { defineConfig } from 'cypress'
-import { configureNextcloud, getContainerIP, stopNextcloud } from './cypress/dockerNode'
+import webpackConfig from '@nextcloud/webpack-vue-config'
+import webpackRules from '@nextcloud/webpack-vue-config/rules'
+
+webpackRules.RULE_TS = {
+	test: /\.ts$/,
+	use: [{
+		loader: 'ts-loader',
+		options: {
+			// skip typechecking for speed
+			transpileOnly: true,
+		},
+	}],
+}
+webpackConfig.module.rules = Object.values(webpackRules)
+
+// Cypress handle its own entry and output
+delete webpackConfig.entry
+delete webpackConfig.output
+webpackConfig.resolve.extensions = ['.ts', '.tsx', '.js', '.jsx', '.cjs', '.vue']
 
 export default defineConfig({
 	projectId: 'h2z7r3',
+
+	// Needed to trigger `before:run` events with cypress open
+	experimentalInteractiveRunEvents: true,
+	// faster video processing
+	videoCompression: false,
+
 	e2e: {
 		async setupNodeEvents(on, config) {
 			await getContainerIP().then((ip) => {
@@ -24,6 +53,11 @@ export default defineConfig({
 		},
 	},
 
-	// Needed to trigger `before:run` events with cypress open
-	experimentalInteractiveRunEvents: true,
+	component: {
+		devServer: {
+			framework: 'vue',
+			bundler: 'webpack',
+			webpackConfig,
+		},
+	},
 })

@@ -1,4 +1,4 @@
-import * as waitOn from 'wait-on'
+import waitOn from 'wait-on'
 import { startNextcloud } from './dockerNode'
 
 // Would be simpler to start the container from cypress.config.ts,
