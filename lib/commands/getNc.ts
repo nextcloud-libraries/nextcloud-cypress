@@ -20,7 +20,7 @@
  *
  */
 
-import { Selector } from "../selectors"
+import type { Selector } from "../selectors"
 
 export const getNc = function(selector: Selector, args: Object = {}): Cypress.Chainable<JQuery<HTMLElement>> {
 	if (typeof selector !== 'function') {

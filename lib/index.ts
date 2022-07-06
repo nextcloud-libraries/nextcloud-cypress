@@ -21,7 +21,7 @@
  */
 import { getNc } from "./commands"
 import { login, logout } from "./commands/sessions"
-import { Selector } from "./selectors"
+import type { Selector } from "./selectors"
 
 declare global {
 	namespace Cypress {

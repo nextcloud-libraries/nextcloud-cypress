@@ -1,4 +1,4 @@
-import { Selector } from "."
+import type { Selector } from "."
 
 // This is a list of selectors for the @nextcloud/upload library
 // @see https://github.com/nextcloud/nextcloud-upload

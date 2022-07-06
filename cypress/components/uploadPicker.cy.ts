@@ -19,6 +19,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
+
 import { UploadPicker as UploadPickerView } from '@nextcloud/upload'
 import { UploadPicker, UploadPickerAddButton, UploadPickerInput } from '../../lib/selectors/uploadPicker'
 
