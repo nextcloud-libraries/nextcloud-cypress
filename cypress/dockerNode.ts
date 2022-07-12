@@ -21,6 +21,7 @@
  */
 
 import Docker from 'dockerode'
+import waitOn from 'wait-on'
 
 const docker = new Docker()
 const CONTAINER_NAME = 'nextcloud-cypress-tests'
@@ -107,6 +108,17 @@ export const getContainerIP = async function(container = docker.getContainer(CON
 
 	return ip
 }
+
+// Would be simpler to start the container from cypress.config.ts,
+// but when checking out different branches, it can take a few seconds
+// Until we can properly configure the baseUrl retry intervals, 
+// We need to make sure the server is already running before cypress
+// https://github.com/cypress-io/cypress/issues/22676
+export const waitOnNextcloud = async function(ip: string) {
+	console.log('> Waiting for Nextcloud to be ready',)
+	await waitOn({ resources: [`http://${ip}/index.php`] })
+}
+
 
 const runExec = async function(container: Docker.Container, command: string[]) {
 	const exec = await container.exec({

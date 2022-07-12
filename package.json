@@ -40,11 +40,10 @@
     "test": "jest --passWithNoTests",
     "test:watch": "jest --watchAll --verbose true --passWithNoTests",
     "test:coverage": "jest --coverage --passWithNoTests",
-    "cypress": "npm run cypress:server-start && npm run cypress:e2e && npm run cypress:component",
+    "cypress": "npm run cypress:e2e && npm run cypress:component",
     "cypress:e2e": "cypress run --e2e",
     "cypress:component": "cypress run --component",
-    "cypress:gui": "npm run cypress:server-start && cypress open",
-    "cypress:server-start": "ts-node cypress/dockerStart.ts"
+    "cypress:gui": "cypress open"
   },
   "repository": {
     "type": "git",
