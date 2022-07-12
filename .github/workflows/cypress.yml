@@ -43,17 +43,10 @@ jobs:
 
       - name: Pull server image
         run: docker pull ghcr.io/nextcloud/continuous-integration-shallow-server
-
-      - name: Start server from the ${{ env.BRANCH }} branch
-        run: | 
-          npm ci
-          npm run cypress:server-start
           
       - name: Run E2E cypress tests
         uses: cypress-io/github-action@v4
         with:
-          # we have already installed everything
-          install: false
           # cypress io
           record: true
           parallel: true

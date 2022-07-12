@@ -2,7 +2,7 @@
 process.env.NODE_ENV = 'development'
 process.env.npm_package_name = 'nextcloud-cypress'
 
-import { configureNextcloud,  getContainerIP,  stopNextcloud } from './cypress/dockerNode'
+import { configureNextcloud,  startNextcloud,  stopNextcloud, waitOnNextcloud } from './cypress/dockerNode'
 import { defineConfig } from 'cypress'
 import webpackConfig from '@nextcloud/webpack-vue-config'
 import webpackRules from '@nextcloud/webpack-vue-config/rules'
@@ -34,22 +34,24 @@ export default defineConfig({
 
 	e2e: {
 		async setupNodeEvents(on, config) {
-			await getContainerIP().then((ip) => {
-				// Setting container's IP as base Url
-				config.baseUrl = `http://${ip}/index.php`
-			})
-
-			// Configure Nextcloud when ready
-			on('before:run', async () => {
-				configureNextcloud()
-			})
-
 			// Remove container after run
 			on('after:run', () => {
 				stopNextcloud()
 			})
 
-			return config
+			// Before the browser launches
+			// starting Nextcloud testing container
+			return startNextcloud()
+				.then((ip) => {
+					// Setting container's IP as base Url
+					config.baseUrl = `http://${ip}/index.php`
+					return ip
+				})
+				.then(waitOnNextcloud)
+				.then(configureNextcloud)
+				.then(() => {
+					return config
+				})
 		},
 	},
 
