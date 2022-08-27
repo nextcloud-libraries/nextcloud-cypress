@@ -62,7 +62,7 @@
     "@nextcloud/webpack-vue-config": "^5.2.1",
     "@rollup/plugin-commonjs": "^22.0.2",
     "@rollup/plugin-node-resolve": "^13.3.0",
-    "@rollup/plugin-typescript": "^8.3.4",
+    "@rollup/plugin-typescript": "^8.4.0",
     "@types/dockerode": "^3.3.9",
     "@types/jest": "^28.1.7",
     "@vue/cli-service": "^5.0.8",
