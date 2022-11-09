@@ -20,24 +20,51 @@
  *
  */
 
-export const login = function(user: string, password: string, route: string = '/apps/files') {
+export class User {
+	user: string
+	password: string
+
+	constructor(user: string, password: string = user) {
+		this.user = user
+		this.password = password
+	}
+}
+
+/**
+ * You should always upload files and/or create users
+ * before login, so that the cookies are NOT YET defined.
+ */
+export const login = function(user: User) {
 	cy.clearCookies()
+
+	// Keep sessions active between tests until
+	// we use the new cypress session API
 	Cypress.Cookies.defaults({
 		preserve: /^(oc|nc)/,
 	})
-	cy.visit(route)
-	cy.get('input[name=user]').type(user)
-	cy.get('input[name=password]').type(password)
-	cy.get('form[name=login] [type=submit]').click()
-	cy.url().should('include', route)
+
+	cy.request('/csrftoken').then(({ body }) => {
+		const requesttoken = body.token
+		cy.request({
+			method: 'POST',
+			url: '/login',
+			body: {
+				user: user.user,
+				password: user.password,
+				requesttoken
+			},
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded',
+			},
+			followRedirect: false,
+		})
+	})
 }
 
 export const logout = function() {
-	cy.document().then(document => {
-		const tokenElement = document.getElementsByTagName('head')[0]
-		const token = tokenElement.getAttribute('data-requesttoken') || ''
-
-		cy.visit(`/logout?requesttoken=${encodeURIComponent(token)}`)
-		cy.url().should('include', '/login')
+	cy.request('/csrftoken').then(({ body }) => {
+		const requestToken = body.token
+		cy.visit(`/logout?requesttoken=${encodeURIComponent(requestToken)}`)
 	})
+	cy.clearCookies()
 }
