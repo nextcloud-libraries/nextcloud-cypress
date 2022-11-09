@@ -20,47 +20,47 @@
  *
  */
 
-export class User {
-	user: string
-	password: string
-
-	constructor(user: string, password: string = user) {
-		this.user = user
-		this.password = password
-	}
-}
+import type { User } from "./users"
 
 /**
  * You should always upload files and/or create users
  * before login, so that the cookies are NOT YET defined.
+ * 
+ * @see https://docs.cypress.io/api/commands/session
  */
 export const login = function(user: User) {
-	cy.clearCookies()
-
-	// Keep sessions active between tests until
-	// we use the new cypress session API
-	Cypress.Cookies.defaults({
-		preserve: /^(oc|nc)/,
-	})
-
-	cy.request('/csrftoken').then(({ body }) => {
-		const requesttoken = body.token
-		cy.request({
-			method: 'POST',
-			url: '/login',
-			body: {
-				user: user.user,
-				password: user.password,
-				requesttoken
-			},
-			headers: {
-				'Content-Type': 'application/x-www-form-urlencoded',
-			},
-			followRedirect: false,
+	cy.session(user, function() {
+		cy.request('/csrftoken').then(({ body }) => {
+			const requestToken = body.token
+			cy.request({
+				method: 'POST',
+				url: '/login',
+				body: { 
+					user: user.userId, 
+					password: user.password, 
+					requesttoken: requestToken
+				},
+				headers: {
+					'Content-Type': 'application/x-www-form-urlencoded',
+				},
+				followRedirect: false,
+			})
 		})
+	}, {
+		validate() {
+			cy.request('/apps/files').its('status').should('eq', 200)
+		},
 	})
 }
 
+/**
+ * Theoretically, should rarely be needed as we
+ * are either login in with another user, which
+ * change the active session, or changing specs
+ * which reset active sessions too
+ *
+ * @see https://docs.cypress.io/api/commands/session#Session-caching
+ */
 export const logout = function() {
 	cy.request('/csrftoken').then(({ body }) => {
 		const requestToken = body.token
