@@ -20,24 +20,51 @@
  *
  */
 
-export const login = function(user: string, password: string, route: string = '/apps/files') {
-	cy.clearCookies()
-	Cypress.Cookies.defaults({
-		preserve: /^(oc|nc)/,
+import type { User } from "./users"
+
+/**
+ * You should always upload files and/or create users
+ * before login, so that the cookies are NOT YET defined.
+ * 
+ * @see https://docs.cypress.io/api/commands/session
+ */
+export const login = function(user: User) {
+	cy.session(user, function() {
+		cy.request('/csrftoken').then(({ body }) => {
+			const requestToken = body.token
+			cy.request({
+				method: 'POST',
+				url: '/login',
+				body: { 
+					user: user.userId, 
+					password: user.password, 
+					requesttoken: requestToken
+				},
+				headers: {
+					'Content-Type': 'application/x-www-form-urlencoded',
+				},
+				followRedirect: false,
+			})
+		})
+	}, {
+		validate() {
+			cy.request('/apps/files').its('status').should('eq', 200)
+		},
 	})
-	cy.visit(route)
-	cy.get('input[name=user]').type(user)
-	cy.get('input[name=password]').type(password)
-	cy.get('form[name=login] [type=submit]').click()
-	cy.url().should('include', route)
 }
 
+/**
+ * Theoretically, should rarely be needed as we
+ * are either login in with another user, which
+ * change the active session, or changing specs
+ * which reset active sessions too
+ *
+ * @see https://docs.cypress.io/api/commands/session#Session-caching
+ */
 export const logout = function() {
-	cy.document().then(document => {
-		const tokenElement = document.getElementsByTagName('head')[0]
-		const token = tokenElement.getAttribute('data-requesttoken') || ''
-
-		cy.visit(`/logout?requesttoken=${encodeURIComponent(token)}`)
-		cy.url().should('include', '/login')
+	cy.request('/csrftoken').then(({ body }) => {
+		const requestToken = body.token
+		cy.visit(`/logout?requesttoken=${encodeURIComponent(requestToken)}`)
 	})
+	cy.clearCookies()
 }

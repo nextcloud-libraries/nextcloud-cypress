@@ -27,13 +27,18 @@ webpackConfig.resolve.extensions = ['.ts', '.tsx', '.js', '.jsx', '.cjs', '.vue'
 export default defineConfig({
 	projectId: 'h2z7r3',
 
-	// Needed to trigger `before:run` events with cypress open
+	// Needed to trigger `after:run` events with cypress open
 	experimentalInteractiveRunEvents: true,
+
 	// faster video processing
 	videoCompression: false,
 
 	e2e: {
-		async setupNodeEvents(on, config) {
+		// Enable session management and disable isolation
+		experimentalSessionAndOrigin: true,
+		testIsolation: 'off',
+
+		setupNodeEvents(on, config) {
 			// Remove container after run
 			on('after:run', () => {
 				stopNextcloud()
@@ -41,7 +46,7 @@ export default defineConfig({
 
 			// Before the browser launches
 			// starting Nextcloud testing container
-			return startNextcloud()
+			return startNextcloud(process.env.BRANCH)
 				.then((ip) => {
 					// Setting container's IP as base Url
 					config.baseUrl = `http://${ip}/index.php`

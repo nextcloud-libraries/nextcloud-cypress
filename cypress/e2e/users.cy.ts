@@ -20,42 +20,35 @@
  *
  */
 import { User } from '../../dist'
+import { randHash } from '../utils'
 
-describe('Login and logout', function() {
-	it('Login and see the default files list', function() {
-		cy.visit('/apps/files')
-		cy.url().should('include', '/login')
 
-		const user = new User('admin', 'admin')
-		cy.login(user)
-
-		cy.visit('/apps/files')
-		cy.url().should('include', '/apps/files')
-
-		cy.window().then(window => {
-			expect(window?.OC?.currentUser).to.eq(user.userId)
-		})
-	})
-
-	it('Login with a different user without logging out', function() {
-		cy.createRandomUser().then((user) => {
+describe('Create user and login', function() {
+	it('Create random user and log in', function() {
+		cy.createRandomUser().then(user => {
 			cy.login(user)
-
-			cy.visit('/apps/files')
-			cy.url().should('include', '/apps/files')
-
-			cy.window().then(window => {
-				expect(window?.OC?.currentUser).to.eq(user.userId)
-			})
 		})
-	})
-
-	it('Logout and see the login page', function() {
-		cy.url().should('include', '/apps/files')
-
-		cy.logout()
 
 		cy.visit('/apps/files')
-		cy.url().should('include', '/login')
+		cy.url().should('include', '/apps/files')
+	})
+
+	const hash = 'user' + randHash()
+	it(`Create '${hash}' user and log in`, function() {
+		const user = new User(hash, 'password')
+		cy.createUser(user).then(() => {
+			cy.login(user)
+		})
+
+		cy.visit('/apps/files')
+		cy.url().should('include', '/apps/files')
+	})
+
+	it('Fail creating an existing user', function() {
+		const user = new User('admin', 'password')
+		cy.createUser(user).then(response => {
+			cy.wrap(response).its('status').should('eq', 400)
+			cy.wrap(response).its('body.ocs.meta.message').should('eq', 'User already exists')
+		})
 	})
 })
