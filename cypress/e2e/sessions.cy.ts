@@ -19,7 +19,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-import { User } from '../../lib'
+import { User } from '../../dist'
 
 describe('Login and logout', function() {
 	it('Login and see the default files list', function() {

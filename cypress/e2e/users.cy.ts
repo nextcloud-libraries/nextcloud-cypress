@@ -19,7 +19,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-import { User } from '../../lib'
+import { User } from '../../dist'
 import { randHash } from '../utils'
 
 

@@ -54,6 +54,8 @@ jobs:
           ci-build-id: ${{ github.sha }}-${{ github.run_number }}
           tag: ${{ github.event_name }}
           group: 'E2E'
+          # Build library before using it
+          build: npm run build
         env:
           # Needs to be prefixed with CYPRESS_
           CYPRESS_BRANCH: ${{ env.BRANCH }}
