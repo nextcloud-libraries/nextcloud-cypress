@@ -16,9 +16,9 @@ jobs:
       pull-requests: write
     strategy:
       matrix:
-        node-version: [ 16, 18 ]
+        node-version: [ 18 ]
         include:
-          - node-version: 14
+          - node-version: 16
             coverage: coverage
 
     name: test
