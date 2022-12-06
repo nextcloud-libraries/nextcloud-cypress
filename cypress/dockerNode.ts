@@ -22,7 +22,6 @@
 
 import Docker from 'dockerode'
 import waitOn from 'wait-on'
-import path from 'path'
 
 export const docker = new Docker()
 

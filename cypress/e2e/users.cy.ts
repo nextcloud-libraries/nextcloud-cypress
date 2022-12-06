@@ -52,3 +52,48 @@ describe('Create user and login', function() {
 		})
 	})
 })
+
+describe('List users and delete user', () => {
+	const hash = 'user' + randHash()
+	it(`Create '${hash}' user and delete them`, () => {
+		const user = new User(hash, 'password')
+		cy.createUser(user).then(() => {
+			cy.login(user)
+			cy.listUsers().then(users => {
+				expect(users).to.contain(user.userId)
+			})
+		})
+
+		cy.deleteUser(user).then(() => {
+			cy.listUsers().then(users => {
+				expect(users).to.not.contain(user.userId)
+			})
+		})
+	})
+
+	it('Fail deleting non existing user', () => {
+		const hash = 'nouser' + randHash()
+		const user = new User(hash, 'password')
+
+		cy.deleteUser(user).then((response) => {
+			cy.wrap(response).its('status').should('eq', 404)
+		})
+	})
+})
+
+describe('Write and read user metadata', () => {
+	const hash = 'user' + randHash()
+	it(`Create '${hash}' user and write user data`, () => {
+		const user = new User(hash, 'password')
+		cy.createUser(user).then(() => {
+			cy.login(user)
+		})
+
+		cy.modifyUser(user, 'displayname', 'John Doe')
+		cy.getUserData(user).then(response => {
+			const parser = new DOMParser();
+			const xmlDoc = parser.parseFromString(response.body, "text/xml");
+			expect(xmlDoc.querySelector('data displayname')?.textContent).to.eq('John Doe')
+		})
+	})
+})
