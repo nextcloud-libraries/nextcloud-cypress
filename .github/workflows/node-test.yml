@@ -18,7 +18,7 @@ jobs:
       matrix:
         node-version: [ 16, 18 ]
         include:
-          - node-version: 14
+          - node-version: 16
             coverage: coverage
 
     name: test
