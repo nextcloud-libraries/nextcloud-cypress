@@ -20,7 +20,7 @@
  *
  */
 
- export class User {
+export class User {
 	userId: string
 	password: string
 	language: string
@@ -47,6 +47,8 @@ export const createRandomUser = function(): Cypress.Chainable<User> {
 
 /**
  * Create a user
+ *
+ * **Warning**: Using this function will reset the previous session
  */
 export const createUser = function(user: User): Cypress.Chainable<Cypress.Response<any>> {
 	const url = `${Cypress.config('baseUrl')}/ocs/v2.php/cloud/users?format=json`.replace('index.php/', '')
@@ -74,6 +76,120 @@ export const createUser = function(user: User): Cypress.Chainable<Cypress.Respon
 
 		// Avoid that any follow up request reuses the admin cookies
 		cy.clearCookies()
+
+		return cy.wrap(response)
+	})
+}
+
+/**
+ * Query list of users on the Nextcloud instance
+ *
+ * **Warning**: Using this function will reset the previous session
+ * @returns list of user IDs
+ */
+export const listUsers = function(): Cypress.Chainable<string[]> {
+	const url = `${Cypress.config('baseUrl')}/ocs/v2.php/cloud/users`.replace('index.php/', '')
+
+	cy.clearCookies()
+	return cy.request({
+		method: 'GET',
+		url,
+		auth: {
+			user: 'admin',
+			pass: 'admin'
+		},
+		headers: {
+			'OCS-ApiRequest': 'true',
+		},
+	}).then((response) => {
+		const parser = new DOMParser();
+		const xmlDoc = parser.parseFromString(response.body, "text/xml");
+		const users = Array.from(xmlDoc.querySelectorAll('users element')).map(v => v.textContent)
+
+		return cy.wrap(users.filter(v => typeof v === 'string') as string[])
+	})
+}
+
+/**
+ * Delete an user on the Nextcloud instance
+ *
+ * **Warning**: Using this function will reset the previous session
+ * @param user User to delete
+ */
+export const deleteUser = function(user: User): Cypress.Chainable<Cypress.Response<any>> {
+	const url = `${Cypress.config('baseUrl')}/ocs/v2.php/cloud/users/${user.userId}`.replace('index.php/', '')
+
+	cy.clearCookies()
+	return cy.request({
+		method: 'DELETE',
+		url,
+		form: true,
+		auth: {
+			user: 'admin',
+			pass: 'admin'
+		},
+		headers: {
+			'OCS-ApiRequest': 'true',
+			'Content-Type': 'application/x-www-form-urlencoded',
+		},
+		failOnStatusCode: false,
+	}).then((response) => {
+		cy.log(`Deleted user ${user}`, response.status)
+		cy.clearCookies()
+		return cy.wrap(response)
+	})
+}
+
+/**
+ * Modify an attribute of a given user on the Nextcloud instance
+ *
+ * @param user User who performs the modification
+ * @param key Attribute name
+ * @param value New attribute value
+ */
+export const modifyUser = function(user: User, key: string, value: any): Cypress.Chainable<Cypress.Response<any>> {
+	const url = `${Cypress.config('baseUrl')}/ocs/v2.php/cloud/users/${user.userId}`.replace('index.php/', '')
+
+	return cy.request({
+		method: 'PUT',
+		url,
+		form: true,
+		body: {
+			key,
+			value
+		},
+		auth: {
+			user: user.userId,
+			password: user.password
+		},
+		headers: {
+			'OCS-ApiRequest': 'true',
+			'Content-Type': 'application/x-www-form-urlencoded',
+		},
+	}).then((response) => {
+		cy.log(`Updated user ${user} ${key} to ${value}`, response.status)
+		return cy.wrap(response)
+	})
+}
+
+/**
+ * Query metadata for and in behalf of a given user
+ */
+export const getUserData = function(user: User): Cypress.Chainable<Cypress.Response<any>> {
+	const url = `${Cypress.config('baseUrl')}/ocs/v2.php/cloud/users/${user.userId}`.replace('index.php/', '')
+
+	return cy.request({
+		method: 'GET',
+		url,
+		auth: {
+			user: user.userId,
+			pass: user.password
+		},
+		headers: {
+			'OCS-ApiRequest': 'true',
+		},
+	}).then((response) => {
+		cy.log(`Loaded metadata for user ${user}`, response.status)
 
 		return cy.wrap(response)
 	})

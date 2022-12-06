@@ -21,7 +21,7 @@
  */
 import { getNc } from "./commands"
 import { login, logout } from "./commands/sessions"
-import { User, createRandomUser, createUser } from "./commands/users"
+import { User, createRandomUser, createUser, deleteUser, modifyUser, listUsers, getUserData } from "./commands/users"
 import type { Selector } from "./selectors"
 
 declare global {
@@ -32,27 +32,63 @@ declare global {
 			 * @example cy.getNc(FileList)
 			 *          cy.getNc(FileRow, { id: fileInfo.id })
 			 */
-			 getNc(selector: Selector, args?: Object): Cypress.Chainable<JQuery<HTMLElement>>
+			getNc(selector: Selector, args?: Object): Cypress.Chainable<JQuery<HTMLElement>>
 
-			 /**
-			  * Login on a Nextcloud instance
-			  */
-			 login(user: User): void
+			/**
+			 * Login on a Nextcloud instance
+			 */
+			login(user: User): void
 
-			 /**
-			  * Logout from a Nextcloud instance
-			  */
-			 logout(): void
+			/**
+			 * Logout from a Nextcloud instance
+			 */
+			logout(): void
 
-			 /**
-			  * Create a random user on the Nextcloud instance
-			  */
-			 createRandomUser(): Cypress.Chainable<User>
+			/**
+			 * Create a random user on the Nextcloud instance
+			 *
+			 * **Warning**: Using this function will reset the previous session
+			 */
+			createRandomUser(): Cypress.Chainable<User>
 
-			 /**
-			  * Create a user on the Nextcloud instance
-			  */
-			 createUser(user: User): Cypress.Chainable<Cypress.Response<any>>
+			/**
+			 * Create a user on the Nextcloud instance
+			 *
+			 * **Warning**: Using this function will reset the previous session
+			 */
+			createUser(user: User): Cypress.Chainable<Cypress.Response<any>>
+
+			/**
+			 * Delete a user on the Nextcloud instance
+			 *
+			 * **Warning**: Using this function will reset the previous session
+			 */
+			deleteUser(user: User): Cypress.Chainable<Cypress.Response<any>>
+
+			/**
+			 * Query list of users on the Nextcloud instance
+			 *
+			 * **Warning**: Using this function will reset the previous session
+			 * @returns list of user IDs
+			 */
+			listUsers(): Cypress.Chainable<string[]>
+
+			/**
+			 * Modify an attribute of a given user on the Nextcloud instance
+			 *
+			 * @param user User who modifies their metadata
+ 			 * @param key Attribute name
+ 			 * @param value New attribute value
+			 */
+			modifyUser(user: User, key: string, value: any): Cypress.Chainable<Cypress.Response<any>>
+
+			/**
+			 * 
+ 			 * Query metadata for, and in behalf, of a given user
+			 *
+			 * @param user User whom metadata to query
+			 */
+			 getUserData(user: User): Cypress.Chainable<Cypress.Response<any>>
 		}
 	}
 }
@@ -70,6 +106,10 @@ export const addCommands = function() {
 	Cypress.Commands.add('logout', logout)
 	Cypress.Commands.add('createRandomUser', createRandomUser)
 	Cypress.Commands.add('createUser', createUser)
+	Cypress.Commands.add('deleteUser', deleteUser)
+	Cypress.Commands.add('listUsers', listUsers)
+	Cypress.Commands.add('modifyUser', modifyUser)
+	Cypress.Commands.add('getUserData', getUserData)
 }
 
 export { User }
