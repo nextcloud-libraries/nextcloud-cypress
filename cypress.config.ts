@@ -34,9 +34,8 @@ export default defineConfig({
 	videoCompression: false,
 
 	e2e: {
-		// Enable session management and disable isolation
-		experimentalSessionAndOrigin: true,
-		testIsolation: 'off',
+		// Disable session isolation
+		testIsolation: false,
 
 		setupNodeEvents(on, config) {
 			// Remove container after run
