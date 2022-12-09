@@ -9,11 +9,7 @@ const config = (input, output) => ({
 	external,
 	plugins: [
 		nodeResolve(),
-		typescript({
-			compilerOptions: output.format === 'cjs'
-				? { target: 'es5' }
-				: {},
-		}),
+		typescript(),
 		commonjs(),
 	],
 	output: [output],

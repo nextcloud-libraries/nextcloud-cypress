@@ -5,18 +5,12 @@
 		"types": ["cypress", "node"],
 		"allowSyntheticDefaultImports": true,
 		"moduleResolution": "node",
-		"target": "es2015",
-		"module": "es2015",
+		// ES2015 is the latest version supported by cypress (besides CommonJS)
+		"target": "ES2015",
+		"module": "ES2015",
 		"declaration": true,
 		"strict": true,
 		"noImplicitAny": false,
 		"outDir": "./dist"
 	},
-	"ts-node": {
-		// these options are overrides used only by ts-node
-		// same as our --compilerOptions flag and our TS_NODE_COMPILER_OPTIONS environment variable
-		"compilerOptions": {
-			"module": "commonjs"
-		}
-	}
 }
