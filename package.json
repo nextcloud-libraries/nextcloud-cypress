@@ -63,7 +63,7 @@
   "devDependencies": {
     "@nextcloud/upload": "^1.1.0-beta.1",
     "@nextcloud/webpack-vue-config": "^5.4.0",
-    "@rollup/plugin-commonjs": "^23.0.3",
+    "@rollup/plugin-commonjs": "^24.0.0",
     "@rollup/plugin-node-resolve": "^15.0.1",
     "@rollup/plugin-typescript": "^10.0.1",
     "@types/cypress": "^1.1.3",
