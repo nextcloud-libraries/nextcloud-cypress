@@ -14,6 +14,10 @@
       "import": "./dist/selectors/index.js",
       "require": "./dist/selectors/index.cjs"
     },
+    "./docker": {
+      "import": "./dist/docker.mjs",
+      "require": "./dist/docker.js"
+    },
     ".": {
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
@@ -61,6 +65,10 @@
   "peerDependencies": {
     "cypress": "^13.2.0"
   },
+  "dependencies": {
+    "dockerode": "^4.0.0",
+    "fast-xml-parser": "^4.2.5"
+  },
   "devDependencies": {
     "@cypress/code-coverage": "^3.10.8",
     "@nextcloud/upload": "1.0.0-beta.14",
@@ -74,7 +82,6 @@
     "@vue/cli-service": "^5.0.8",
     "@vue/tsconfig": "^0.5.0",
     "cypress": "^13.2.0",
-    "dockerode": "^4.0.0",
     "jest": "^29.5.0",
     "jest-environment-jsdom": "^29.5.0",
     "nyc": "^15.1.0",

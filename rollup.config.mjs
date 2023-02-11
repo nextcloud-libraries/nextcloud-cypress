@@ -1,8 +1,18 @@
 import { nodeResolve } from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
 import typescript from '@rollup/plugin-typescript'
+import { readFile } from 'fs/promises'
 
-const external = []
+const packageJSON = JSON.parse(
+	await readFile(
+		new URL('./package.json', import.meta.url)
+	)
+)
+
+const external = [
+	...Object.keys(packageJSON.dependencies),
+	...Object.keys(packageJSON.peerDependencies)
+]
 
 const config = (input, output) => ({
 	input,
@@ -49,5 +59,14 @@ export default [
 		file: 'dist/selectors/index.cjs',
 		format: 'cjs',
 		sourcemap: true,
+	}),
+
+	config('./lib/docker.ts', {
+		file: 'dist/docker.mjs',
+		format: 'esm',
+	}),
+	config('./lib/docker.ts', {
+		file: 'dist/docker.js',
+		format: 'cjs',
 	}),
 ]
