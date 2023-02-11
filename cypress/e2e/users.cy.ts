@@ -22,6 +22,7 @@
 import { User } from '../../dist'
 import { randHash } from '../utils'
 
+beforeEach(() => cy.logout())
 
 describe('Create user and login', function() {
 	it('Create random user and log in', function() {
@@ -91,8 +92,8 @@ describe('Write and read user metadata', () => {
 
 		cy.modifyUser(user, 'displayname', 'John Doe')
 		cy.getUserData(user).then(response => {
-			const parser = new DOMParser();
-			const xmlDoc = parser.parseFromString(response.body, "text/xml");
+			const parser = new DOMParser()
+			const xmlDoc = parser.parseFromString(response.body, 'text/xml')
 			expect(xmlDoc.querySelector('data displayname')?.textContent).to.eq('John Doe')
 		})
 	})
