@@ -24,7 +24,7 @@
 import Docker from 'dockerode'
 import waitOn from 'wait-on'
 
-import type { Stream } from 'node:stream'
+import { type Stream, PassThrough } from 'stream'
 import { join, resolve, sep } from 'path'
 import { existsSync, readFileSync } from 'fs'
 import { XMLParser } from 'fast-xml-parser'
@@ -34,7 +34,15 @@ export const docker = new Docker()
 const CONTAINER_NAME = 'nextcloud-cypress-tests'
 const SERVER_IMAGE = 'ghcr.io/nextcloud/continuous-integration-shallow-server'
 
-const TEXT_APP_GIT = 'https://github.com/nextcloud/text.git'
+const VENDOR_APPS = {
+	text: 'https://github.com/nextcloud/text.git',
+	viewer: 'https://github.com/nextcloud/viewer.git',
+	notifications: 'https://github.com/nextcloud/notifications.git',
+	activity: 'https://github.com/nextcloud/activity.git',
+}
+
+// Store latest server branch used, will be used for vendored apps
+let _serverBranch = 'master'
 
 /**
  * Start the testing container
@@ -44,7 +52,7 @@ const TEXT_APP_GIT = 'https://github.com/nextcloud/text.git'
  * @return Promise resolving to the IP address of the server
  * @throws {Error} If Nextcloud container could not be started
  */
-export const startNextcloud = async function(branch = 'master', mountApp: boolean|string = true): Promise<any> {
+export const startNextcloud = async function(branch = 'master', mountApp: boolean|string = true): Promise<string> {
 	let appPath = mountApp === true ? process.cwd() : mountApp
 	let appId: string|undefined
 	let appVersion: string|undefined
@@ -128,8 +136,10 @@ export const startNextcloud = async function(branch = 'master', mountApp: boolea
 
 		// Get container's IP
 		const ip = await getContainerIP(container)
-
 		console.log(`├─ Nextcloud container's IP is ${ip} 🌏`)
+
+		_serverBranch = branch
+
 		return ip
 	} catch (err) {
 		console.log('└─ Unable to start the container 🛑')
@@ -143,8 +153,11 @@ export const startNextcloud = async function(branch = 'master', mountApp: boolea
  * Configure Nextcloud
  *
  * @param {string[]} apps List of default apps to install (default is ['viewer'])
+ * @param {string|undefined} vendoredBranch The branch used for vendored apps, should match server (defaults to latest branch used for `startNextcloud` or fallsback to `master`)
  */
-export const configureNextcloud = async function(apps = ['viewer']) {
+export const configureNextcloud = async function(apps = ['viewer'], vendoredBranch?: string) {
+	vendoredBranch = vendoredBranch || _serverBranch
+
 	console.log('\nConfiguring nextcloud...')
 	const container = docker.getContainer(CONTAINER_NAME)
 	await runExec(container, ['php', 'occ', '--version'], true)
@@ -168,17 +181,13 @@ export const configureNextcloud = async function(apps = ['viewer']) {
 		} else if (app in applist.disabled) {
 			// built in
 			await runExec(container, ['php', 'occ', 'app:enable', '--force', app], true)
+		} else if (app in VENDOR_APPS) {
+			// some apps are vendored but not within the server package
+			await runExec(container, ['git', 'clone', '--depth=1', `--branch=${vendoredBranch}`, VENDOR_APPS[app], `apps/${app}`], true)
+			await runExec(container, ['php', 'occ', 'app:enable', '--force', app], true)
 		} else {
-			if (app === 'text') {
-				// text is vendored but not within the server package
-				await runExec(container, ['apt', 'update'], false, 'root')
-				await runExec(container, ['apt-get', '-y', 'install', 'git'], false, 'root')
-				await runExec(container, ['git', 'clone', '--depth=1', TEXT_APP_GIT, 'apps/text'], true)
-				await runExec(container, ['php', 'occ', 'app:enable', '--force', app], true)
-			} else {
-				// try appstore
-				await runExec(container, ['php', 'occ', 'app:install', '--force', app], true)
-			}
+			// try appstore
+			await runExec(container, ['php', 'occ', 'app:install', '--force', app], true)
 		}
 	}
 	// await runExec(container, ['php', 'occ', 'app:list'], true)
@@ -252,22 +261,28 @@ const runExec = async function(
 	})
 
 	return new Promise<string>((resolve, reject) => {
+		const dataStream = new PassThrough()
+
 		exec.start({}, (err, stream) => {
 			if (stream) {
-				const data = [] as string[]
-				stream.setEncoding('utf8')
-				stream.on('data', (str) => {
-					data.push(str)
-					const printable = str.replace(/\p{C}/gu, '').trim()
-					if (verbose && printable !== '') {
-						console.log(`├─ ${printable.replace(/\n/gi, '\n├─ ')}`)
-					}
-				})
-				stream.on('end', () => resolve(data.join('')))
+				// Pass stdout and stderr to dataStream
+				exec.modem.demuxStream(stream, dataStream, dataStream)
+				stream.on('end', () => dataStream.end())
 			} else {
 				reject(err)
 			}
 		})
+
+		const data: string[] = []
+		dataStream.on('data', (chunk) => {
+			data.push(chunk.toString('utf8'))
+			const printable = data.at(-1)?.trim()
+			if (verbose && printable) {
+				console.log(`├─ ${printable.replace(/\n/gi, '\n├─ ')}`)
+			}
+		})
+		dataStream.on('error', (err) => reject(err))
+		dataStream.on('end', () => resolve(data.join('')))
 	})
 }
 

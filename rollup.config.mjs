@@ -1,13 +1,8 @@
 import { nodeResolve } from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
 import typescript from '@rollup/plugin-typescript'
-import { readFile } from 'fs/promises'
 
-const packageJSON = JSON.parse(
-	await readFile(
-		new URL('./package.json', import.meta.url)
-	)
-)
+import packageJSON from './package.json' assert { type: 'json' }
 
 const external = [
 	...Object.keys(packageJSON.dependencies),

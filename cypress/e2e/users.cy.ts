@@ -22,8 +22,6 @@
 import { User } from '../../dist'
 import { randHash } from '../utils'
 
-beforeEach(() => cy.logout())
-
 describe('Create user and login', function() {
 	it('Create random user and log in', function() {
 		cy.createRandomUser().then(user => {

@@ -56,8 +56,8 @@ export default defineConfig({
 					config.baseUrl = `http://${ip}/index.php`
 					return ip
 				})
-				.then(waitOnNextcloud)
-				.then(() => configureNextcloud())
+				.then(waitOnNextcloud as (ip: string) => Promise<undefined>) // void !== undefined for Typescript
+				.then(configureNextcloud)
 				.then(() => {
 					return config
 				})
