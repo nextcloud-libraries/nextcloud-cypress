@@ -34,8 +34,18 @@ const SERVER_IMAGE = 'ghcr.io/nextcloud/continuous-integration-shallow-server'
 export const startNextcloud = async function (branch: string = 'master'): Promise<any> {
 	try {
 		// Pulling images
-		console.log('Pulling images...')
-		await docker.pull(SERVER_IMAGE)
+		console.log('Pulling images... ⏳')
+		await new Promise((resolve, reject) => docker.pull(SERVER_IMAGE, (_err, stream: Stream) => {
+			const onFinished = function(err: Error | null) {
+				if (!err) {
+					return resolve(true)
+				}
+				reject(err)
+			}
+			// https://github.com/apocas/dockerode/issues/357
+			docker.modem.followProgress(stream, onFinished)
+		}))
+		console.log('└─ Done')
 
 		// Getting latest image
 		console.log('\nChecking running containers... 🔍')
