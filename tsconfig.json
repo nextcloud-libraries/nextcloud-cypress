@@ -11,6 +11,8 @@
 		"declaration": true,
 		"strict": true,
 		"noImplicitAny": false,
-		"outDir": "./dist"
+		"outDir": "./dist",
+		// https://github.com/vuejs/tsconfig/issues/6
+		"ignoreDeprecations": "5.0"	
 	},
 }
