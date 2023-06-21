@@ -23,18 +23,18 @@ jobs:
 
     name: e2e runner ${{ matrix.containers }}
     steps:
-      - name: Checkout app
-        uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
 
       - name: Read package.json node and npm engines version
-        uses: skjnldsv/read-package-engines-version-actions@v2.2
+        uses: skjnldsv/read-package-engines-version-actions@v2.2 # v2.1
         id: versions
         with:
-          fallbackNode: '^12'
-          fallbackNpm: '^6'
+          fallbackNode: '^20'
+          fallbackNpm: '^9'
 
       - name: Set up node ${{ steps.versions.outputs.nodeVersion }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3
         with:
           node-version: ${{ steps.versions.outputs.nodeVersion }}
 
@@ -45,7 +45,7 @@ jobs:
         run: docker pull ghcr.io/nextcloud/continuous-integration-shallow-server
           
       - name: Run E2E cypress tests
-        uses: cypress-io/github-action@v5
+        uses: cypress-io/github-action@d69252d52b9a31bad4f418f05ba2bc83687a02eb # v5.8.3
         with:
           # cypress io
           record: true
@@ -75,26 +75,26 @@ jobs:
 
     name: component runner ${{ matrix.containers }}
     steps:
-      - name: Checkout app
-        uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
 
       - name: Read package.json node and npm engines version
-        uses: skjnldsv/read-package-engines-version-actions@v2.2
+        uses: skjnldsv/read-package-engines-version-actions@v2.2 # v2.1
         id: versions
         with:
-          fallbackNode: '^12'
-          fallbackNpm: '^6'
+          fallbackNode: '^20'
+          fallbackNpm: '^9'
 
       - name: Set up node ${{ steps.versions.outputs.nodeVersion }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3
         with:
           node-version: ${{ steps.versions.outputs.nodeVersion }}
 
       - name: Set up npm ${{ steps.versions.outputs.npmVersion }}
         run: npm i -g npm@"${{ steps.versions.outputs.npmVersion }}"
-          
+
       - name: Run Components cypress tests
-        uses: cypress-io/github-action@v5
+        uses: cypress-io/github-action@d69252d52b9a31bad4f418f05ba2bc83687a02eb # v5.8.3
         with:
           # to run component tests we need to use "component: true"
           component: true
