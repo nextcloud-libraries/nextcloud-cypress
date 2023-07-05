@@ -9,7 +9,7 @@ const config = (input, output) => ({
 	external,
 	plugins: [
 		nodeResolve(),
-		typescript(),
+		typescript({ declaration: input === './lib/index.ts' }),
 		commonjs(),
 	],
 	output: [output],
