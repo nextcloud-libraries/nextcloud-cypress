@@ -21,7 +21,7 @@
  */
 
 import { UploadPicker as UploadPickerView } from '@nextcloud/upload'
-import { UploadPicker, UploadPickerAddButton, UploadPickerInput } from '../../lib/selectors/uploadPicker'
+import { UploadPicker, UploadPickerAddButton, UploadPickerInput } from '../../dist/selectors'
 
 describe('UploadPicker', function() {
 	it('Mount upload picker and check selectors', function() {
