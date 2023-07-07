@@ -21,7 +21,7 @@
  */
 import { getNc } from "./commands"
 import { login, logout } from "./commands/sessions"
-import { User, createRandomUser, createUser, deleteUser, modifyUser, listUsers, getUserData } from "./commands/users"
+import { User, createRandomUser, createUser, deleteUser, modifyUser, listUsers, getUserData, enableUser } from "./commands/users"
 import type { Selector } from "./selectors"
 
 declare global {
@@ -69,9 +69,12 @@ declare global {
 			 * Query list of users on the Nextcloud instance
 			 *
 			 * **Warning**: Using this function will reset the previous session
-			 * @returns list of user IDs
+			 * 
+			 * @param details Set to true to fetch users with detailed information (default false)
+			 * @return List of user IDs or list of Users (if details was set to true)
 			 */
-			listUsers(): Cypress.Chainable<string[]>
+			listUsers<b extends boolean>(details?: b): Cypress.Chainable<b extends true ? Record<string, string>[] : string[]>
+			listUsers(details?: boolean): Cypress.Chainable<Record<string,string>[] | string[]>
 
 			/**
 			 * Modify an attribute of a given user on the Nextcloud instance
@@ -83,8 +86,15 @@ declare global {
 			modifyUser(user: User, key: string, value: any): Cypress.Chainable<Cypress.Response<any>>
 
 			/**
+			 * Enable or disable a given user
 			 * 
- 			 * Query metadata for, and in behalf, of a given user
+			 * @param user user whom to enable or disable
+			 * @param enable True to enable, false to disable (default is enable)
+			 */
+			enableUser(user: User, enable?: boolean): Cypress.Chainable<Cypress.Response<any>>
+			/**
+			 * 
+			 * Query metadata for, and in behalf, of a given user
 			 *
 			 * @param user User whom metadata to query
 			 */
@@ -109,6 +119,7 @@ export const addCommands = function() {
 	Cypress.Commands.add('deleteUser', deleteUser)
 	Cypress.Commands.add('listUsers', listUsers)
 	Cypress.Commands.add('modifyUser', modifyUser)
+	Cypress.Commands.add('enableUser', enableUser)
 	Cypress.Commands.add('getUserData', getUserData)
 }
 
