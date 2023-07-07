@@ -2,6 +2,7 @@
  * @copyright 2022 John Molakvoæ <skjnldsv@protonmail.com>
  *
  * @author John Molakvoæ <skjnldsv@protonmail.com>
+ * @author Ferdinand Thiessen <opensource@fthiessen.de>
  *
  * @license AGPL-3.0-or-later
  *
@@ -87,8 +88,9 @@ export const createUser = function(user: User): Cypress.Chainable<Cypress.Respon
  * **Warning**: Using this function will reset the previous session
  * @returns list of user IDs
  */
-export const listUsers = function(): Cypress.Chainable<string[]> {
-	const url = `${Cypress.config('baseUrl')}/ocs/v2.php/cloud/users`.replace('index.php/', '')
+export function listUsers<b extends boolean>(details?: b): Cypress.Chainable<b extends true ? Record<string, string>[] : string[]>;
+export function listUsers(details = false): Cypress.Chainable<Record<string, string>[] | string[]> {
+	const url = `${Cypress.config('baseUrl')}/ocs/v2.php/cloud/users${details ? '/details' : ''}`.replace('index.php/', '')
 
 	cy.clearCookies()
 	return cy.request({
@@ -104,9 +106,19 @@ export const listUsers = function(): Cypress.Chainable<string[]> {
 	}).then((response) => {
 		const parser = new DOMParser();
 		const xmlDoc = parser.parseFromString(response.body, "text/xml");
-		const users = Array.from(xmlDoc.querySelectorAll('users element')).map(v => v.textContent)
 
-		return cy.wrap(users.filter(v => typeof v === 'string') as string[])
+		if (!details) {
+			const users = Array.from(xmlDoc.querySelectorAll('users element')).map(v => v.textContent)
+			return users.filter(v => typeof v === 'string') as string[]
+		} else {
+			const list = Array.from(xmlDoc.querySelectorAll('users > *')).map(v => {
+				//  We only handle simple text properties for the moment
+				const properties = [...v.childNodes].filter(c => c.childNodes.length <= 1)
+
+				return Object.fromEntries(properties.map(p => [p.nodeName, p.textContent || '']))
+			})
+			return list as Record<string, string>[]
+		}
 	})
 }
 
@@ -174,6 +186,8 @@ export const modifyUser = function(user: User, key: string, value: any): Cypress
 
 /**
  * Query metadata for and in behalf of a given user
+ * 
+ * @param user User to change
  */
 export const getUserData = function(user: User): Cypress.Chainable<Cypress.Response<any>> {
 	const url = `${Cypress.config('baseUrl')}/ocs/v2.php/cloud/users/${user.userId}`.replace('index.php/', '')
@@ -191,6 +205,33 @@ export const getUserData = function(user: User): Cypress.Chainable<Cypress.Respo
 	}).then((response) => {
 		cy.log(`Loaded metadata for user ${user}`, response.status)
 
+		return cy.wrap(response)
+	})
+}
+
+/**
+ * Enable or disable a user
+ *
+ * @param {User} user the user to dis- / enable
+ * @param {boolean} enable True if the user should be enable, false to disable
+ */
+export const enableUser = function(user: User, enable = true): Cypress.Chainable<Cypress.Response<any>> {
+	const url = `${Cypress.config('baseUrl')}/ocs/v2.php/cloud/users/${user.userId}/${enable ? 'enable' : 'disable'}`.replace('index.php/', '')
+
+	return cy.request({
+		method: 'PUT',
+		url,
+		form: true,
+		auth: {
+			user: 'admin',
+			password: 'admin',
+		},
+		headers: {
+			'OCS-ApiRequest': 'true',
+			'Content-Type': 'application/x-www-form-urlencoded',
+		},
+	}).then((response) => {
+		cy.log(`Enabled user ${user}`, response.status)
 		return cy.wrap(response)
 	})
 }

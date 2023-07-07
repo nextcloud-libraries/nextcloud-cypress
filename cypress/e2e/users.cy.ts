@@ -98,3 +98,39 @@ describe('Write and read user metadata', () => {
 		})
 	})
 })
+
+describe('Enable and disable users', () => {
+	const hash = 'user' + randHash()
+	let user = new User(hash, 'password')
+
+	beforeEach(() => cy.createUser(user))
+	afterEach(() => cy.deleteUser(user))
+
+	it('can disable user', () => {
+		cy.listUsers(true).then(details => {
+			const usersDetails = details.filter(v => v.id === user.userId)
+			expect(usersDetails.length).to.eq(1)
+			expect(usersDetails[0].enabled).to.eq('1')
+		})
+
+		cy.enableUser(user, false).listUsers(true).then(details => {
+			const usersDetails = details.filter(v => v.id === user.userId)
+			expect(usersDetails.length).to.eq(1)
+			expect(usersDetails[0].enabled).to.eq('')
+		})
+	})
+
+	it('can enable a user', () => {
+		cy.enableUser(user, false).listUsers(true).then(details => {
+			const usersDetails = details.filter(v => v.id === user.userId)
+			expect(usersDetails.length).to.eq(1)
+			expect(usersDetails[0].enabled).to.eq('')
+		})
+
+		cy.enableUser(user).listUsers(true).then(details => {
+			const usersDetails = details.filter(v => v.id === user.userId)
+			expect(usersDetails.length).to.eq(1)
+			expect(usersDetails[0].enabled).to.eq('1')
+		})
+	})
+})
