@@ -45,7 +45,7 @@ jobs:
         run: docker pull ghcr.io/nextcloud/continuous-integration-shallow-server
 
       - name: Run E2E cypress tests
-        uses: cypress-io/github-action@248bde77443c376edc45906ede03a1aba9da0462 # v5.8.4
+        uses: cypress-io/github-action@59810ebfa5a5ac6fcfdcfdf036d1cd4d083a88f2 # v6.5.0
         with:
           # cypress io
           record: true
@@ -99,7 +99,7 @@ jobs:
         run: npm i -g npm@"${{ steps.versions.outputs.npmVersion }}"
 
       - name: Run Components cypress tests
-        uses: cypress-io/github-action@248bde77443c376edc45906ede03a1aba9da0462 # v5.8.4
+        uses: cypress-io/github-action@59810ebfa5a5ac6fcfdcfdf036d1cd4d083a88f2 # v6.5.0
         with:
           # to run component tests we need to use "component: true"
           component: true
