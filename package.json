@@ -59,7 +59,7 @@
   },
   "homepage": "https://github.com/nextcloud/nextcloud-cypress",
   "peerDependencies": {
-    "cypress": "^13.2.0"
+    "cypress": "^12 || ^13"
   },
   "devDependencies": {
     "@cypress/code-coverage": "^3.10.8",
