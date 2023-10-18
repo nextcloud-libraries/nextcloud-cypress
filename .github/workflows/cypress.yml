@@ -24,7 +24,7 @@ jobs:
     name: e2e runner ${{ matrix.containers }}
     steps:
       - name: Checkout
-        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v3.5.2
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v3.5.2
 
       - name: Read package.json node and npm engines version
         uses: skjnldsv/read-package-engines-version-actions@v2.2 # v2.1
@@ -65,7 +65,7 @@ jobs:
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
 
       - name: Collect coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v3.1.4
         with:
           files: ./coverage/lcov.info
 
@@ -81,7 +81,7 @@ jobs:
     name: component runner ${{ matrix.containers }}
     steps:
       - name: Checkout
-        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v3.5.2
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v3.5.2
 
       - name: Read package.json node and npm engines version
         uses: skjnldsv/read-package-engines-version-actions@v2.2 # v2.1
@@ -121,7 +121,7 @@ jobs:
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
 
       - name: Collect coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@eaaf4bedf32dbdc6b720b63067d99c4d77d6047d # v3.1.4
         with:
           files: ./coverage/lcov.info
 
