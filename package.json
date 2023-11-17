@@ -63,7 +63,7 @@
   },
   "devDependencies": {
     "@cypress/code-coverage": "^3.10.8",
-    "@nextcloud/upload": "1.0.0-beta.14",
+    "@nextcloud/upload": "1.0.1",
     "@nextcloud/webpack-vue-config": "^6.0.0",
     "@rollup/plugin-commonjs": "^25.0.0",
     "@rollup/plugin-node-resolve": "^15.0.1",
