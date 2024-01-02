@@ -179,10 +179,10 @@ export const configureNextcloud = async function(apps = ['viewer'], vendoredBran
 		if (app in applist.enabled) {
 			console.log(`├─ ${app} version ${applist.enabled[app]} already installed and enabled`)
 		} else if (app in applist.disabled) {
-			// built in
+			// built in or mounted already as the app under development
 			await runExec(container, ['php', 'occ', 'app:enable', '--force', app], true)
 		} else if (app in VENDOR_APPS) {
-			// some apps are vendored but not within the server package
+			// apps that are vendored but still missing (i.e. not build in or mounted already)
 			await runExec(container, ['git', 'clone', '--depth=1', `--branch=${vendoredBranch}`, VENDOR_APPS[app], `apps/${app}`], true)
 			await runExec(container, ['php', 'occ', 'app:enable', '--force', app], true)
 		} else {
