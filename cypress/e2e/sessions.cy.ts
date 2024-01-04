@@ -22,8 +22,6 @@
 import { User } from '../../dist'
 
 describe('Login and logout', function() {
-	before(() => cy.logout())
-
 	it('Login and see the default files list', function() {
 		cy.visit('/apps/files')
 		cy.url().should('include', '/login')

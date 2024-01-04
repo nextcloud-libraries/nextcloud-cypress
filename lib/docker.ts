@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * @copyright Copyright (c) 2022 John Molakvoæ <skjnldsv@protonmail.com>
  *
@@ -23,15 +24,61 @@
 import Docker from 'dockerode'
 import waitOn from 'wait-on'
 
+import { type Stream, PassThrough } from 'stream'
+import { join, resolve, sep } from 'path'
+import { existsSync, readFileSync } from 'fs'
+import { XMLParser } from 'fast-xml-parser'
+
 export const docker = new Docker()
 
 const CONTAINER_NAME = 'nextcloud-cypress-tests'
 const SERVER_IMAGE = 'ghcr.io/nextcloud/continuous-integration-shallow-server'
 
+const VENDOR_APPS = {
+	text: 'https://github.com/nextcloud/text.git',
+	viewer: 'https://github.com/nextcloud/viewer.git',
+	notifications: 'https://github.com/nextcloud/notifications.git',
+	activity: 'https://github.com/nextcloud/activity.git',
+}
+
+// Store latest server branch used, will be used for vendored apps
+let _serverBranch = 'master'
+
 /**
  * Start the testing container
+ *
+ * @param branch server branch to use
+ * @param mountApp bind mount app within server (`true` for autodetect, `false` to disable, or a string to force a path)
+ * @return Promise resolving to the IP address of the server
+ * @throws {Error} If Nextcloud container could not be started
  */
-export const startNextcloud = async function (branch: string = 'master'): Promise<any> {
+export const startNextcloud = async function(branch = 'master', mountApp: boolean|string = true): Promise<string> {
+	let appPath = mountApp === true ? process.cwd() : mountApp
+	let appId: string|undefined
+	let appVersion: string|undefined
+	if (appPath) {
+		console.log('Mounting app directory')
+		while (appPath) {
+			const appInfoPath = resolve(join(appPath, 'appinfo', 'info.xml'))
+			if (existsSync(appInfoPath)) {
+				const parser = new XMLParser()
+				const xmlDoc = parser.parse(readFileSync(appInfoPath))
+				appId = xmlDoc.info.id
+				appVersion = xmlDoc.info.version
+				console.log(`└─ Found ${appId} version ${appVersion}`)
+				break
+			} else {
+				// skip if root is reached or manual directory was set
+				if (appPath === sep || typeof mountApp === 'string') {
+					console.log('└─ No appinfo found')
+					appPath = false
+					break
+				}
+				appPath = join(appPath, '..')
+			}
+		}
+	}
+
 	try {
 		// Pulling images
 		console.log('Pulling images... ⏳')
@@ -56,22 +103,22 @@ export const startNextcloud = async function (branch: string = 'master'): Promis
 			const oldContainer = docker.getContainer(CONTAINER_NAME)
 			const oldContainerData = await oldContainer.inspect()
 			if (oldContainerData.State.Running) {
-				console.log(`├─ Existing running container found`)
+				console.log('├─ Existing running container found')
 				if (localImage[0].Id !== oldContainerData.Image) {
-					console.log(`└─ But running container is outdated, replacing...`)
+					console.log('└─ But running container is outdated, replacing...')
 				} else {
 					// Get container's IP
-					console.log(`├─ Reusing that container`)
-					let ip = await getContainerIP(oldContainer)
+					console.log('├─ Reusing that container')
+					const ip = await getContainerIP(oldContainer)
 					return ip
 				}
 			} else {
-				console.log(`└─ None found!`)
+				console.log('└─ None found!')
 			}
 			// Forcing any remnants to be removed just in case
 			await oldContainer.remove({ force: true })
 		} catch (error) {
-			console.log(`└─ None found!`)
+			console.log('└─ None found!')
 		}
 
 		// Starting container
@@ -81,16 +128,21 @@ export const startNextcloud = async function (branch: string = 'master'): Promis
 			Image: SERVER_IMAGE,
 			name: CONTAINER_NAME,
 			Env: [`BRANCH=${branch}`],
+			HostConfig: {
+				Binds: appPath !== false ? [`${appPath}:/var/www/html/apps/${appId}`] : undefined,
+			},
 		})
 		await container.start()
 
 		// Get container's IP
-		let ip = await getContainerIP(container)
-
+		const ip = await getContainerIP(container)
 		console.log(`├─ Nextcloud container's IP is ${ip} 🌏`)
+
+		_serverBranch = branch
+
 		return ip
 	} catch (err) {
-		console.log(`└─ Unable to start the container 🛑`)
+		console.log('└─ Unable to start the container 🛑')
 		console.log(err)
 		stopNextcloud()
 		throw new Error('Unable to start the container')
@@ -99,8 +151,13 @@ export const startNextcloud = async function (branch: string = 'master'): Promis
 
 /**
  * Configure Nextcloud
+ *
+ * @param {string[]} apps List of default apps to install (default is ['viewer'])
+ * @param {string|undefined} vendoredBranch The branch used for vendored apps, should match server (defaults to latest branch used for `startNextcloud` or fallsback to `master`)
  */
-export const configureNextcloud = async function () {
+export const configureNextcloud = async function(apps = ['viewer'], vendoredBranch?: string) {
+	vendoredBranch = vendoredBranch || _serverBranch
+
 	console.log('\nConfiguring nextcloud...')
 	const container = docker.getContainer(CONTAINER_NAME)
 	await runExec(container, ['php', 'occ', '--version'], true)
@@ -112,8 +169,27 @@ export const configureNextcloud = async function () {
 	await runExec(container, ['php', 'occ', 'config:system:set', 'force_locale', '--value', 'en_US'], true)
 	await runExec(container, ['php', 'occ', 'config:system:set', 'enforce_theme', '--value', 'light'], true)
 
-	// Enable the app and give status
-	await runExec(container, ['php', 'occ', 'app:enable', '--force', 'viewer'], true)
+	// Build app list
+	const json = await runExec(container, ['php', 'occ', 'app:list', '--output', 'json'], false)
+	// fix dockerode bug returning invalid leading characters
+	const applist = JSON.parse(json.substring(json.indexOf('{')))
+
+	// Enable apps and give status
+	for (const app of apps) {
+		if (app in applist.enabled) {
+			console.log(`├─ ${app} version ${applist.enabled[app]} already installed and enabled`)
+		} else if (app in applist.disabled) {
+			// built in or mounted already as the app under development
+			await runExec(container, ['php', 'occ', 'app:enable', '--force', app], true)
+		} else if (app in VENDOR_APPS) {
+			// apps that are vendored but still missing (i.e. not build in or mounted already)
+			await runExec(container, ['git', 'clone', '--depth=1', `--branch=${vendoredBranch}`, VENDOR_APPS[app], `apps/${app}`], true)
+			await runExec(container, ['php', 'occ', 'app:enable', '--force', app], true)
+		} else {
+			// try appstore
+			await runExec(container, ['php', 'occ', 'app:install', '--force', app], true)
+		}
+	}
 	// await runExec(container, ['php', 'occ', 'app:list'], true)
 
 	console.log('└─ Nextcloud is now ready to use 🎉')
@@ -122,7 +198,7 @@ export const configureNextcloud = async function () {
 /**
  * Force stop the testing container
  */
-export const stopNextcloud = async function () {
+export const stopNextcloud = async function() {
 	try {
 		const container = docker.getContainer(CONTAINER_NAME)
 		console.log('Stopping Nextcloud container...')
@@ -135,8 +211,10 @@ export const stopNextcloud = async function () {
 
 /**
  * Get the testing container's IP
+ *
+ * @param container name of the container
  */
-export const getContainerIP = async function (
+export const getContainerIP = async function(
 	container = docker.getContainer(CONTAINER_NAME)
 ): Promise<string> {
 	let ip = ''
@@ -144,7 +222,7 @@ export const getContainerIP = async function (
 	while (ip === '' && tries < 10) {
 		tries++
 
-		await container.inspect(function (err, data) {
+		await container.inspect((_err, data) => {
 			ip = data?.NetworkSettings?.IPAddress || ''
 		})
 
@@ -163,40 +241,51 @@ export const getContainerIP = async function (
 // Until we can properly configure the baseUrl retry intervals,
 // We need to make sure the server is already running before cypress
 // https://github.com/cypress-io/cypress/issues/22676
-export const waitOnNextcloud = async function (ip: string) {
+export const waitOnNextcloud = async function(ip: string) {
 	console.log('├─ Waiting for Nextcloud to be ready... ⏳')
 	await waitOn({ resources: [`http://${ip}/index.php`] })
 	console.log('└─ Done')
 }
 
-const runExec = async function (
+const runExec = async function(
 	container: Docker.Container,
 	command: string[],
-	verbose: boolean = false
+	verbose = false,
+	user = 'www-data'
 ) {
 	const exec = await container.exec({
 		Cmd: command,
 		AttachStdout: true,
 		AttachStderr: true,
-		User: 'www-data',
+		User: user,
 	})
 
-	return new Promise((resolve, reject) => {
+	return new Promise<string>((resolve, reject) => {
+		const dataStream = new PassThrough()
+
 		exec.start({}, (err, stream) => {
 			if (stream) {
-				stream.setEncoding('utf-8')
-				stream.on('data', str => {
-					if (verbose && str.trim() !== '') {
-						console.log(`├─ ${str.trim().replace(/\n/gi, '\n├─ ')}`)
-					}
-				})
-				stream.on('end', resolve)
+				// Pass stdout and stderr to dataStream
+				exec.modem.demuxStream(stream, dataStream, dataStream)
+				stream.on('end', () => dataStream.end())
+			} else {
+				reject(err)
 			}
 		})
+
+		const data: string[] = []
+		dataStream.on('data', (chunk) => {
+			data.push(chunk.toString('utf8'))
+			const printable = data.at(-1)?.trim()
+			if (verbose && printable) {
+				console.log(`├─ ${printable.replace(/\n/gi, '\n├─ ')}`)
+			}
+		})
+		dataStream.on('error', (err) => reject(err))
+		dataStream.on('end', () => resolve(data.join('')))
 	})
 }
 
-const sleep = function (milliseconds: number) {
+const sleep = function(milliseconds: number) {
 	return new Promise((resolve) => setTimeout(resolve, milliseconds))
 }
- 

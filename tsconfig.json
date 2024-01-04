@@ -3,6 +3,7 @@
 	"include": ["./lib/**/*.ts"],
 	"compilerOptions": {
 		"types": ["cypress", "node"],
+		"lib": ["ES2015", "DOM", "DOM.Iterable"],
 		"allowSyntheticDefaultImports": true,
 		"moduleResolution": "node",
 		// ES2015 is the latest version supported by cypress (besides CommonJS)

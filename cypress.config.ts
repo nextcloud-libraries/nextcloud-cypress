@@ -3,7 +3,7 @@ process.env.NODE_ENV = 'development'
 process.env.npm_package_name = 'nextcloud-cypress'
 
 /* eslint-disable import/first */
-import { configureNextcloud, startNextcloud, stopNextcloud, waitOnNextcloud } from './cypress/dockerNode'
+import { configureNextcloud, startNextcloud, stopNextcloud, waitOnNextcloud } from './lib/docker'
 import { defineConfig } from 'cypress'
 import CodeCoverage from '@cypress/code-coverage/task'
 import webpackConfig from '@nextcloud/webpack-vue-config'
@@ -56,7 +56,7 @@ export default defineConfig({
 					config.baseUrl = `http://${ip}/index.php`
 					return ip
 				})
-				.then(waitOnNextcloud)
+				.then(waitOnNextcloud as (ip: string) => Promise<undefined>) // void !== undefined for Typescript
 				.then(configureNextcloud)
 				.then(() => {
 					return config
