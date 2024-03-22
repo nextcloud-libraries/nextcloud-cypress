@@ -21,19 +21,18 @@
  *
  */
 
+import type { Container } from 'dockerode'
+import type { Stream } from 'stream'
+
 import Docker from 'dockerode'
 import waitOn from 'wait-on'
 
-import { type Stream, PassThrough } from 'stream'
-import { join, resolve, sep } from 'path'
+import { PassThrough } from 'stream'
+import { basename, join, resolve, sep } from 'path'
 import { existsSync, readFileSync } from 'fs'
 import { XMLParser } from 'fast-xml-parser'
 
-export const docker = new Docker()
-
-const CONTAINER_NAME = 'nextcloud-cypress-tests'
 const SERVER_IMAGE = 'ghcr.io/nextcloud/continuous-integration-shallow-server'
-
 const VENDOR_APPS = {
 	text: 'https://github.com/nextcloud/text.git',
 	viewer: 'https://github.com/nextcloud/viewer.git',
@@ -41,18 +40,59 @@ const VENDOR_APPS = {
 	activity: 'https://github.com/nextcloud/activity.git',
 }
 
+export const docker = new Docker()
+
+// Store the container name, different names are used to prevent conflicts when testing multiple apps locally
+let _containerName: string|null = null
 // Store latest server branch used, will be used for vendored apps
 let _serverBranch = 'master'
+
+/**
+ * Get the container name that is currently created and/or used by dockerode
+ */
+export const getContainerName = function(): string {
+	if (_containerName === null) {
+		const app = basename(process.cwd()).replace(' ', '')
+		_containerName = `nextcloud-cypress-tests_${app}`
+	}
+	return _containerName
+}
+
+/**
+ * Get the current container used
+ * Throws if not found
+ */
+export const getContainer = function(): Container {
+	return docker.getContainer(getContainerName())
+}
+
+interface StartOptions {
+	/**
+	 * Force recreate the container even if an old one is found
+	 * @default false
+	 */
+	forceRecreate?: boolean
+
+	/**
+	 * Additional mounts to create on the container
+	 * You can pass a mapping from server path (relative to Nextcloud root) to your local file system
+	 * @example ```js
+	 * { config: '/path/to/local/config' }
+	 * ```
+	 */
+	mounts?: Record<string, string>
+}
 
 /**
  * Start the testing container
  *
  * @param branch server branch to use
  * @param mountApp bind mount app within server (`true` for autodetect, `false` to disable, or a string to force a path)
+ * @param options Optional parameters to configre the container creation
  * @return Promise resolving to the IP address of the server
  * @throws {Error} If Nextcloud container could not be started
  */
-export const startNextcloud = async function(branch = 'master', mountApp: boolean|string = true): Promise<string> {
+export const startNextcloud = async function(branch = 'master', mountApp: boolean|string = true, options: StartOptions = {}): Promise<string> {
 	let appPath = mountApp === true ? process.cwd() : mountApp
 	let appId: string|undefined
 	let appVersion: string|undefined
@@ -81,7 +121,7 @@ export const startNextcloud = async function(branch = 'master', mountApp: boolea
 
 	try {
 		// Pulling images
-		console.log('Pulling images... ⏳')
+		console.log('Pulling images… ⏳')
 		await new Promise((resolve, reject) => docker.pull(SERVER_IMAGE, (_err, stream: Stream) => {
 			const onFinished = function(err: Error | null) {
 				if (!err) {
@@ -95,17 +135,19 @@ export const startNextcloud = async function(branch = 'master', mountApp: boolea
 		console.log('└─ Done')
 
 		// Getting latest image
-		console.log('\nChecking running containers... 🔍')
+		console.log('\nChecking running containers… 🔍')
 		const localImage = await docker.listImages({ filters: `{"reference": ["${SERVER_IMAGE}"]}` })
 
 		// Remove old container if exists and not initialized by us
 		try {
-			const oldContainer = docker.getContainer(CONTAINER_NAME)
+			const oldContainer = getContainer()
 			const oldContainerData = await oldContainer.inspect()
 			if (oldContainerData.State.Running) {
 				console.log('├─ Existing running container found')
-				if (localImage[0].Id !== oldContainerData.Image) {
-					console.log('└─ But running container is outdated, replacing...')
+				if (options.forceRecreate === true) {
+					console.log('└─ Forced recreation of container was enabled, removing…')
+				} else if (localImage[0].Id !== oldContainerData.Image) {
+					console.log('└─ But running container is outdated, replacing…')
 				} else {
 					// Get container's IP
 					console.log('├─ Reusing that container')
@@ -122,14 +164,22 @@ export const startNextcloud = async function(branch = 'master', mountApp: boolea
 		}
 
 		// Starting container
-		console.log('\nStarting Nextcloud container... 🚀')
+		console.log('\nStarting Nextcloud container… 🚀')
 		console.log(`├─ Using branch '${branch}'`)
+
+		const mounts: string[] = []
+		if (appPath !== false) {
+			mounts.push(`${appPath}:/var/www/html/apps/${appId}:ro`)
+		}
+		Object.entries(options.mounts ?? {})
+			.forEach(([server, local]) => mounts.push(`${local}:/var/www/html/${server}:ro`))
+
 		const container = await docker.createContainer({
 			Image: SERVER_IMAGE,
-			name: CONTAINER_NAME,
+			name: getContainerName(),
 			Env: [`BRANCH=${branch}`],
 			HostConfig: {
-				Binds: appPath !== false ? [`${appPath}:/var/www/html/apps/${appId}`] : undefined,
+				Binds: mounts.length > 0 ? mounts : undefined,
 			},
 		})
 		await container.start()
@@ -158,8 +208,8 @@ export const startNextcloud = async function(branch = 'master', mountApp: boolea
 export const configureNextcloud = async function(apps = ['viewer'], vendoredBranch?: string) {
 	vendoredBranch = vendoredBranch || _serverBranch
 
-	console.log('\nConfiguring nextcloud...')
-	const container = docker.getContainer(CONTAINER_NAME)
+	console.log('\nConfiguring nextcloud…')
+	const container = getContainer()
 	await runExec(container, ['php', 'occ', '--version'], true)
 
 	// Be consistent for screenshots
@@ -200,8 +250,8 @@ export const configureNextcloud = async function(apps = ['viewer'], vendoredBran
  */
 export const stopNextcloud = async function() {
 	try {
-		const container = docker.getContainer(CONTAINER_NAME)
-		console.log('Stopping Nextcloud container...')
+		const container = getContainer()
+		console.log('Stopping Nextcloud container…')
 		container.remove({ force: true })
 		console.log('└─ Nextcloud container removed 🥀')
 	} catch (err) {
@@ -215,7 +265,7 @@ export const stopNextcloud = async function() {
  * @param container name of the container
  */
 export const getContainerIP = async function(
-	container = docker.getContainer(CONTAINER_NAME)
+	container = getContainer()
 ): Promise<string> {
 	let ip = ''
 	let tries = 0
@@ -242,7 +292,7 @@ export const getContainerIP = async function(
 // We need to make sure the server is already running before cypress
 // https://github.com/cypress-io/cypress/issues/22676
 export const waitOnNextcloud = async function(ip: string) {
-	console.log('├─ Waiting for Nextcloud to be ready... ⏳')
+	console.log('├─ Waiting for Nextcloud to be ready… ⏳')
 	await waitOn({ resources: [`http://${ip}/index.php`] })
 	console.log('└─ Done')
 }
