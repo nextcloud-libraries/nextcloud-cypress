@@ -7,18 +7,22 @@
   "types": "dist/index.d.ts",
   "exports": {
     "./commands": {
+      "types": "./dist/commands/index.d.ts",
       "import": "./dist/commands/index.js",
       "require": "./dist/commands/index.cjs"
     },
     "./selectors": {
+      "types": "./dist/selectors/index.d.ts",
       "import": "./dist/selectors/index.js",
       "require": "./dist/selectors/index.cjs"
     },
     "./docker": {
+      "types": "./dist/selectors/docker.d.ts",
       "import": "./dist/docker.mjs",
       "require": "./dist/docker.js"
     },
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     }
