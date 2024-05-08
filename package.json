@@ -17,7 +17,7 @@
       "require": "./dist/selectors/index.cjs"
     },
     "./docker": {
-      "types": "./dist/selectors/docker.d.ts",
+      "types": "./dist/docker.d.ts",
       "import": "./dist/docker.mjs",
       "require": "./dist/docker.js"
     },
