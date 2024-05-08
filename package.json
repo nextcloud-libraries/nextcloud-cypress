@@ -67,7 +67,7 @@
   },
   "homepage": "https://github.com/nextcloud/nextcloud-cypress",
   "peerDependencies": {
-    "cypress": "^13.2.0"
+    "cypress": "^13.9.0"
   },
   "dependencies": {
     "dockerode": "^4.0.2",
@@ -75,8 +75,8 @@
     "wait-on": "^7.2.0"
   },
   "devDependencies": {
-    "@cypress/code-coverage": "^3.12.34",
-    "@nextcloud/upload": "1.0.0-beta.14",
+    "@cypress/code-coverage": "^3.12.39",
+    "@nextcloud/upload": "^1.1.1",
     "@nextcloud/webpack-vue-config": "^6.0.1",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
