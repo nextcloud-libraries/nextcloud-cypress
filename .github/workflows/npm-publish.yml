@@ -2,6 +2,9 @@
 #
 # https://github.com/nextcloud/.github
 # https://docs.github.com/en/actions/learn-github-actions/sharing-workflows-with-your-organization
+#
+# SPDX-FileCopyrightText: 2021-2024 Nextcloud GmbH and Nextcloud contributors
+# SPDX-License-Identifier: MIT
 
 name: Publish
 
@@ -19,6 +22,11 @@ jobs:
 
     name: Build and publish to npm
     steps:
+      - name: Check actor permission level
+        uses: skjnldsv/check-actor-permission@69e92a3c4711150929bca9fcf34448c5bf5526e7 # v3.0
+        with:
+          require: write
+
       - name: Checkout
         uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b # v4.1.5
 
@@ -27,7 +35,7 @@ jobs:
         id: versions
         with:
           fallbackNode: '^20'
-          fallbackNpm: '^9'
+          fallbackNpm: '^10'
 
       - name: Set up node ${{ steps.versions.outputs.nodeVersion }}
         uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v3
@@ -50,13 +58,3 @@ jobs:
           npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Setup Github Package Registry
-        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v3
-        with:
-          registry-url: 'https://npm.pkg.github.com'
-
-      - name: Publish package on GPR
-        run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
