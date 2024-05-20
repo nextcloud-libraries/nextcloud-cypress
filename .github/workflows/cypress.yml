@@ -67,7 +67,7 @@ jobs:
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
 
       - name: Collect coverage
-        uses: codecov/codecov-action@6d798873df2b1b8e5846dba6fb86631229fbcb17 # v4.4.0
+        uses: codecov/codecov-action@125fc84a9a348dbcf27191600683ec096ec9021c # v4.4.1
         with:
           files: ./coverage/lcov.info
 
@@ -123,7 +123,7 @@ jobs:
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
 
       - name: Collect coverage
-        uses: codecov/codecov-action@6d798873df2b1b8e5846dba6fb86631229fbcb17 # v4.4.0
+        uses: codecov/codecov-action@125fc84a9a348dbcf27191600683ec096ec9021c # v4.4.1
         with:
           files: ./coverage/lcov.info
 
