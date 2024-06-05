@@ -78,7 +78,7 @@
     "@cypress/code-coverage": "^3.12.39",
     "@nextcloud/upload": "^1.1.1",
     "@nextcloud/webpack-vue-config": "^6.0.1",
-    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-commonjs": "^26.0.1",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-typescript": "^11.1.6",
     "@types/cypress": "^1.1.3",
