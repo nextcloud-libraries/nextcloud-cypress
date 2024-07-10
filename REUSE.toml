@@ -1,0 +1,12 @@
+# SPDX-FileCopyrightText: 2024 Nextcloud GmbH and Nextcloud contributors
+# SPDX-License-Identifier: AGPL-3.0-or-later
+version = 1
+SPDX-PackageName = "nextcloud-cypress"
+SPDX-PackageSupplier = "Nextcloud <info@nextcloud.com>"
+SPDX-PackageDownloadLocation = "https://github.com/nextcloud-libraries/nextcloud-cypressg"
+
+[[annotations]]
+path = ["package-lock.json", "package.json", "tsconfig.json", "__tests__/tsconfig.json", "cypress/tsconfig.json"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2022 Nextcloud GmbH and Nextcloud contributors"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
