@@ -2,8 +2,9 @@
   - SPDX-FileCopyrightText: 2022 Nextcloud GmbH and Nextcloud contributors
   - SPDX-License-Identifier: AGPL-3.0-or-later
 -->
-# \@nextcloud/cypress 
-[![npm last version](https://img.shields.io/npm/v/@nextcloud/cypress.svg?style=flat-square)](https://www.npmjs.com/package/@nextcloud/cypress) ![Codecov](https://img.shields.io/codecov/c/github/nextcloud/nextcloud-cypress?style=flat-square)
+# \@nextcloud/cypress
+
+[![REUSE status](https://api.reuse.software/badge/github.com/nextcloud-libraries/nextcloud-cypress)](https://api.reuse.software/info/github.com/nextcloud-libraries/nextcloud-cypress) [![npm last version](https://img.shields.io/npm/v/@nextcloud/cypress.svg?style=flat-square)](https://www.npmjs.com/package/@nextcloud/cypress) ![Codecov](https://img.shields.io/codecov/c/github/nextcloud/nextcloud-cypress?style=flat-square)
 
 Nextcloud cypress helpers for Nextcloud apps and libraries
 
