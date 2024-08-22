@@ -177,9 +177,20 @@ export async function startNextcloud(branch = 'master', mountApp: boolean|string
 			HostConfig: {
 				Binds: mounts.length > 0 ? mounts : undefined,
 				PortBindings,
+				// Mount data directory in RAM for faster IO
+				Mounts: [{
+					Target: '/var/www/html/data',
+					Source: '',
+					Type: 'tmpfs',
+					ReadOnly: false,
+				}],
 			},
 		})
 		await container.start()
+
+		// Set proper permissions for the data folder
+		await runExec(container, ['chown', '-R', 'www-data:www-data', '/var/www/html/data'], false, 'root')
+		await runExec(container, ['chmod', '0770', '/var/www/html/data'], false, 'root')
 
 		// Get container's IP
 		const ip = await getContainerIP(container)
