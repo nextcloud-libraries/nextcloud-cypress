@@ -173,7 +173,7 @@ export async function startNextcloud(branch = 'master', mountApp: boolean|string
 		const container = await docker.createContainer({
 			Image: SERVER_IMAGE,
 			name: getContainerName(),
-			Env: [`BRANCH=${branch}`],
+			Env: [`BRANCH=${branch}`, 'APCU=1'],
 			HostConfig: {
 				Binds: mounts.length > 0 ? mounts : undefined,
 				PortBindings,
@@ -227,6 +227,19 @@ export const configureNextcloud = async function(apps = ['viewer'], vendoredBran
 	await runExec(container, ['php', 'occ', 'config:system:set', 'default_locale', '--value', 'en_US'], true)
 	await runExec(container, ['php', 'occ', 'config:system:set', 'force_locale', '--value', 'en_US'], true)
 	await runExec(container, ['php', 'occ', 'config:system:set', 'enforce_theme', '--value', 'light'], true)
+
+	// Checking apcu
+	console.log('├─ Checking APCu configuration... 👀')
+	const distributed = await runExec(container, ['php', 'occ', 'config:system:get', 'memcache.distributed'])
+	const local = await runExec(container, ['php', 'occ', 'config:system:get', 'memcache.local'])
+	const hashing = await runExec(container, ['php', 'occ', 'config:system:get', 'hashing_default_password'])
+	if (!distributed.includes('Memcache\\APCu')
+		|| !local.includes('Memcache\\APCu')
+		|| !hashing.includes('true')) {
+		console.log('└─ APCu is not properly configured 🛑')
+		throw new Error('APCu is not properly configured')
+	}
+	console.log('│  └─ OK !')
 
 	// Build app list
 	const json = await runExec(container, ['php', 'occ', 'app:list', '--output', 'json'], false)
