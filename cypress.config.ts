@@ -7,7 +7,7 @@ process.env.NODE_ENV = 'development'
 process.env.npm_package_name = 'nextcloud-cypress'
 
 /* eslint-disable import/first */
-import { configureNextcloud, startNextcloud, stopNextcloud, waitOnNextcloud } from './lib/docker'
+import { configureNextcloud, createSnapshot, setupUsers, startNextcloud, stopNextcloud, waitOnNextcloud } from './lib/docker'
 import { defineConfig } from 'cypress'
 import CodeCoverage from '@cypress/code-coverage/task'
 import webpackConfig from '@nextcloud/webpack-vue-config'
@@ -61,7 +61,9 @@ export default defineConfig({
 					return ip
 				})
 				.then(waitOnNextcloud as (ip: string) => Promise<undefined>) // void !== undefined for Typescript
-				.then(configureNextcloud)
+				.then(configureNextcloud as () => Promise<undefined>)
+				.then(setupUsers as () => Promise<undefined>)
+				.then(() => createSnapshot('init'))
 				.then(() => {
 					return config
 				})

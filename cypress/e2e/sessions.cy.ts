@@ -20,6 +20,22 @@ describe('Login and logout', function() {
 		})
 	})
 
+	it('Login with a pre-existing user and logout', function() {
+		cy.login(new User('test1', 'test1'))
+
+		cy.visit('/apps/files')
+		cy.url().should('include', '/apps/files')
+
+		cy.window().then(window => {
+			expect(window?.OC?.currentUser).to.eq('test1')
+		})
+
+		cy.logout()
+
+		cy.visit('/apps/files')
+		cy.url().should('include', '/login')
+	})
+
 	it('Login with a different user without logging out', function() {
 		cy.createRandomUser().then((user) => {
 			cy.login(user)
