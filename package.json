@@ -45,7 +45,7 @@
     "build:doc": "typedoc --out dist/doc lib/commands lib/selectors lib && touch dist/doc/.nojekyll",
     "build:instrumented": "rollup --config rollup.instrumented.mjs",
     "dev": "echo 'No dev build available, production only' && npm run build",
-    "watch": "rollup --config rollup.config.js --watch",
+    "watch": "rollup --config rollup.config.mjs --watch",
     "test": "jest --passWithNoTests",
     "test:watch": "jest --watchAll --verbose true --passWithNoTests",
     "test:coverage": "jest --coverage --passWithNoTests",

@@ -285,7 +285,7 @@ export const setupUsers = async function(container?: Container) {
  * @param {Container|undefined} container Optional server container to use (defaults to current container)
  * @return Promise resolving to the snapshot name
  */
-export const createSnapshot = async function(snapshot: string, container?: Container): Promise<string> {
+export const createSnapshot = async function(snapshot?: string, container?: Container): Promise<string> {
 	const hash = new Date().toISOString().replace(/[^0-9]/g, '')
 	console.log('\nCreating init DB snapshot…')
 	await runExec(container ?? getContainer(), ['cp', '/var/www/html/data/owncloud.db', `/var/www/html/data/owncloud.db-${snapshot ?? hash}`], true)
