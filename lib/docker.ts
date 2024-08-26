@@ -86,7 +86,7 @@ export async function startNextcloud(branch = 'master', mountApp: boolean|string
 	let appId: string|undefined
 	let appVersion: string|undefined
 	if (appPath) {
-		console.log('Mounting app directory')
+		console.log('Mounting app directories…')
 		while (appPath) {
 			const appInfoPath = resolve(join(appPath, 'appinfo', 'info.xml'))
 			if (existsSync(appInfoPath)) {
@@ -110,7 +110,7 @@ export async function startNextcloud(branch = 'master', mountApp: boolean|string
 
 	try {
 		// Pulling images
-		console.log('Pulling images… ⏳')
+		console.log('\nPulling images… ⏳')
 		await new Promise((resolve, reject) => docker.pull(SERVER_IMAGE, (_err, stream: Stream) => {
 			const onFinished = function(err: Error | null) {
 				if (!err) {
@@ -262,9 +262,46 @@ export const configureNextcloud = async function(apps = ['viewer'], vendoredBran
 			await runExec(container, ['php', 'occ', 'app:install', '--force', app], true)
 		}
 	}
-	// await runExec(container, ['php', 'occ', 'app:list'], true)
-
 	console.log('└─ Nextcloud is now ready to use 🎉')
+}
+
+/**
+ * Setup test users
+ *
+ * @param {Container|undefined} container Optional server container to use (defaults to current container)
+ */
+export const setupUsers = async function(container?: Container) {
+	console.log('\nCreating test users… 👤')
+	const users = ['test1', 'test2', 'test3', 'test4', 'test5']
+	for (const user of users) {
+		await runExec(container ?? getContainer(), ['php', 'occ', 'user:add', user, '--password-from-env'], true, 'www-data', ['OC_PASS=' + user])
+	}
+	console.log('└─ Done')
+}
+
+/**
+ * Create a snapshot of the current database
+ * @param {string|undefined} snapshot Name of the snapshot (default is a timestamp)
+ * @param {Container|undefined} container Optional server container to use (defaults to current container)
+ * @return Promise resolving to the snapshot name
+ */
+export const createSnapshot = async function(snapshot?: string, container?: Container): Promise<string> {
+	const hash = new Date().toISOString().replace(/[^0-9]/g, '')
+	console.log('\nCreating init DB snapshot…')
+	await runExec(container ?? getContainer(), ['cp', '/var/www/html/data/owncloud.db', `/var/www/html/data/owncloud.db-${snapshot ?? hash}`], true)
+	console.log('└─ Done')
+	return snapshot ?? hash
+}
+
+/**
+ * Restore a snapshot of the database
+ * @param {string|undefined} snapshot Name of the snapshot (default is 'init')
+ * @param {Container|undefined} container Optional server container to use (defaults to current container)
+ */
+export const restoreSnapshot = async function(snapshot = 'init', container?: Container) {
+	console.log('\nRestoring DB snapshot…')
+	await runExec(container ?? getContainer(), ['cp', `/var/www/html/data/owncloud.db-${snapshot}`, '/var/www/html/data/owncloud.db'], true)
+	console.log('└─ Done')
 }
 
 /**
@@ -323,13 +360,15 @@ const runExec = async function(
 	container: Docker.Container,
 	command: string[],
 	verbose = false,
-	user = 'www-data'
+	user = 'www-data',
+	env: string[] = [],
 ) {
 	const exec = await container.exec({
 		Cmd: command,
 		AttachStdout: true,
 		AttachStderr: true,
 		User: user,
+		Env: env,
 	})
 
 	return new Promise<string>((resolve, reject) => {

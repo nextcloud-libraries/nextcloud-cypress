@@ -4,6 +4,7 @@
  */
 import { getNc } from "./commands"
 import { login, logout } from "./commands/sessions"
+import { createDBSnapshot, restoreDBSnapshot } from "./commands/snapshots"
 import { User, createRandomUser, createUser, deleteUser, modifyUser, listUsers, getUserData, enableUser } from "./commands/users"
 import type { Selector } from "./selectors"
 
@@ -75,13 +76,25 @@ declare global {
 			 * @param enable True to enable, false to disable (default is enable)
 			 */
 			enableUser(user: User, enable?: boolean): Cypress.Chainable<Cypress.Response<any>>
+
 			/**
 			 * 
 			 * Query metadata for, and in behalf, of a given user
 			 *
 			 * @param user User whom metadata to query
 			 */
-			 getUserData(user: User): Cypress.Chainable<Cypress.Response<any>>
+			getUserData(user: User): Cypress.Chainable<Cypress.Response<any>>
+
+			/**
+			* Create a snapshot of the current database
+			*/
+			createDBSnapshot(snapshot?: string): Cypress.Chainable<string>,
+
+			/**
+			* Restore a snapshot of the database
+			* Default is the post-setup state
+			*/
+			restoreDBSnapshot(snapshot?: string): Cypress.Chainable,
 		}
 	}
 }
@@ -104,6 +117,8 @@ export const addCommands = function() {
 	Cypress.Commands.add('modifyUser', modifyUser)
 	Cypress.Commands.add('enableUser', enableUser)
 	Cypress.Commands.add('getUserData', getUserData)
+	Cypress.Commands.add('createDBSnapshot', createDBSnapshot)
+	Cypress.Commands.add('restoreDBSnapshot', restoreDBSnapshot)
 }
 
 export { User }
