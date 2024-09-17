@@ -9,7 +9,7 @@ describe('Create a snapshot and a user', function() {
 	let snapshot: string
 
 	it('Create a snapshot', function() {
-		cy.createDBSnapshot().then(_snapshot => {
+		cy.saveState().then(_snapshot => {
 			snapshot = _snapshot
 		})
 	})
@@ -30,7 +30,7 @@ describe('Create a snapshot and a user', function() {
 	})
 
 	it('Restore the snapshot', function() {
-		cy.restoreDBSnapshot(snapshot)
+		cy.restoreState(snapshot)
 	})
 
 	it('Fail login with the user', function() {

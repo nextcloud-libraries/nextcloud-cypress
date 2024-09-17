@@ -6,4 +6,4 @@
 export * from './getNc'
 export * from './sessions'
 export * from './users'
-export * from './snapshots'
+export * from './state'

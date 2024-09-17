@@ -2,9 +2,8 @@
  * SPDX-FileCopyrightText: 2022 Nextcloud GmbH and Nextcloud contributors
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-import { getNc } from "./commands"
+import { getNc, restoreState, saveState } from "./commands"
 import { login, logout } from "./commands/sessions"
-import { createDBSnapshot, restoreDBSnapshot } from "./commands/snapshots"
 import { User, createRandomUser, createUser, deleteUser, modifyUser, listUsers, getUserData, enableUser } from "./commands/users"
 import type { Selector } from "./selectors"
 
@@ -53,7 +52,7 @@ declare global {
 			 * Query list of users on the Nextcloud instance
 			 *
 			 * **Warning**: Using this function will reset the previous session
-			 * 
+			 *
 			 * @param details Set to true to fetch users with detailed information (default false)
 			 * @return List of user IDs or list of Users (if details was set to true)
 			 */
@@ -71,14 +70,14 @@ declare global {
 
 			/**
 			 * Enable or disable a given user
-			 * 
+			 *
 			 * @param user user whom to enable or disable
 			 * @param enable True to enable, false to disable (default is enable)
 			 */
 			enableUser(user: User, enable?: boolean): Cypress.Chainable<Cypress.Response<any>>
 
 			/**
-			 * 
+			 *
 			 * Query metadata for, and in behalf, of a given user
 			 *
 			 * @param user User whom metadata to query
@@ -86,15 +85,19 @@ declare global {
 			getUserData(user: User): Cypress.Chainable<Cypress.Response<any>>
 
 			/**
-			* Create a snapshot of the current database
-			*/
-			createDBSnapshot(snapshot?: string): Cypress.Chainable<string>,
+			 * Create a snapshot of the current DB and data folder state.
+			 *
+			 * @return string the ID of the snapshot
+			 */
+			saveState(): Cypress.Chainable<string>
 
 			/**
-			* Restore a snapshot of the database
-			* Default is the post-setup state
-			*/
-			restoreDBSnapshot(snapshot?: string): Cypress.Chainable,
+			 * Restore a snapshot of the database
+			 * Default is the post-setup state
+			 *
+			 * @param snapshot string the ID of the snapshot
+			 */
+			restoreState(snapshot: string): Cypress.Chainable<void>
 		}
 	}
 }
@@ -117,8 +120,8 @@ export const addCommands = function() {
 	Cypress.Commands.add('modifyUser', modifyUser)
 	Cypress.Commands.add('enableUser', enableUser)
 	Cypress.Commands.add('getUserData', getUserData)
-	Cypress.Commands.add('createDBSnapshot', createDBSnapshot)
-	Cypress.Commands.add('restoreDBSnapshot', restoreDBSnapshot)
+	Cypress.Commands.add('saveState', saveState)
+	Cypress.Commands.add('restoreState', restoreState)
 }
 
 export { User }
