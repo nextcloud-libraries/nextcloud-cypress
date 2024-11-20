@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2022 Nextcloud GmbH and Nextcloud contributors
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-import { getNc, restoreState, saveState } from "./commands"
+import { getNc, restoreState, runCommand, runOccCommand, saveState } from "./commands"
 import { login, logout } from "./commands/sessions"
 import { User, createRandomUser, createUser, deleteUser, modifyUser, listUsers, getUserData, enableUser } from "./commands/users"
 import type { Selector } from "./selectors"
@@ -98,6 +98,17 @@ declare global {
 			 * @param snapshot string the ID of the snapshot
 			 */
 			restoreState(snapshot: string): Cypress.Chainable<void>
+
+			/**
+			 * Run a command in the docker container
+			 *
+			 */
+			runCommand(command: string, options?: Partial<Cypress.ExecOptions>): Cypress.Chainable<Cypress.Exec>
+
+			/**
+			 * Run an occ command
+			 */
+			runOccCommand(command: string, options?: Partial<Cypress.ExecOptions>): Cypress.Chainable<Cypress.Exec>
 		}
 	}
 }
@@ -122,6 +133,8 @@ export const addCommands = function() {
 	Cypress.Commands.add('getUserData', getUserData)
 	Cypress.Commands.add('saveState', saveState)
 	Cypress.Commands.add('restoreState', restoreState)
+	Cypress.Commands.add('runCommand', runCommand)
+	Cypress.Commands.add('runOccCommand', runOccCommand)
 }
 
 export { User }
