@@ -19,7 +19,8 @@ export function runCommand(command: string, options?: Partial<Cypress.ExecOption
 
 	getContainerName()
 		.then((containerName) => {
-			return cy.exec(`docker exec --user www-data --workdir /var/www/html/data ${env} ${containerName} ${command}`, options)
+			// Wrapping command inside bash -c "..." to allow using '*'.
+			return cy.exec(`docker exec --user www-data --workdir /var/www/html ${env} ${containerName} bash -c "${command}"`, options)
 		})
 
 }

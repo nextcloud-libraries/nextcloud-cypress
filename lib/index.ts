@@ -97,7 +97,7 @@ declare global {
 			 *
 			 * @param snapshot string the ID of the snapshot
 			 */
-			restoreState(snapshot: string): Cypress.Chainable<void>
+			restoreState(snapshot?: string): Cypress.Chainable<void>
 
 			/**
 			 * Run a command in the docker container
