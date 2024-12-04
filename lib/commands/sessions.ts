@@ -8,7 +8,7 @@ import type { User } from "./users"
 /**
  * You should always upload files and/or create users
  * before login, so that the cookies are NOT YET defined.
- * 
+ *
  * @see https://docs.cypress.io/api/commands/session
  */
 export const login = function(user: User) {
@@ -18,13 +18,15 @@ export const login = function(user: User) {
 			cy.request({
 				method: 'POST',
 				url: '/login',
-				body: { 
-					user: user.userId, 
-					password: user.password, 
+				body: {
+					user: user.userId,
+					password: user.password,
 					requesttoken: requestToken
 				},
 				headers: {
 					'Content-Type': 'application/x-www-form-urlencoded',
+					// Add the Origin header so that the request is not blocked by the browser.
+					'Origin': (Cypress.config('baseUrl') ?? '').replace('index.php/', ''),
 				},
 				followRedirect: false,
 			})
