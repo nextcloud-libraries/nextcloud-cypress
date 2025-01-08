@@ -77,7 +77,7 @@ interface StartOptions {
  *
  * @param {string|undefined} branch server branch to use (default 'master')
  * @param {boolean|string|undefined} mountApp bind mount app within server (`true` for autodetect, `false` to disable, or a string to force a path) (default true)
- * @param {StartOptions|undefined} options Optional parameters to configre the container creation
+ * @param {StartOptions|undefined} options Optional parameters to configure the container creation
  * @return Promise resolving to the IP address of the server
  * @throws {Error} If Nextcloud container could not be started
  */
@@ -189,8 +189,8 @@ export async function startNextcloud(branch = 'master', mountApp: boolean|string
 		await container.start()
 
 		// Set proper permissions for the data folder
-		await runExec(container, ['chown', '-R', 'www-data:www-data', '/var/www/html/data'], false, 'root')
-		await runExec(container, ['chmod', '0770', '/var/www/html/data'], false, 'root')
+		await runExec(['chown', '-R', 'www-data:www-data', '/var/www/html/data'], { container, user: 'root' })
+		await runExec(['chmod', '0770', '/var/www/html/data'], { container, user: 'root' })
 
 		// Get container's IP
 		const ip = await getContainerIP(container)
@@ -219,20 +219,20 @@ export const configureNextcloud = async function(apps = ['viewer'], vendoredBran
 
 	console.log('\nConfiguring Nextcloud…')
 	container = container ?? getContainer()
-	await runOcc(container, ['--version'], true)
+	await runOcc(['--version'], { container, verbose: true })
 
 	// Be consistent for screenshots
-	await setSystemConfig(container, 'default_language', 'en')
-	await setSystemConfig(container, 'force_language', 'en')
-	await setSystemConfig(container, 'default_locale', 'en_US')
-	await setSystemConfig(container, 'force_locale', 'en_US')
-	await setSystemConfig(container, 'enforce_theme', 'light')
+	await setSystemConfig('default_language', 'en', { container })
+	await setSystemConfig('force_language', 'en', { container })
+	await setSystemConfig('default_locale', 'en_US', { container })
+	await setSystemConfig('force_locale', 'en_US', { container })
+	await setSystemConfig('enforce_theme', 'light', { container })
 
 	// Checking apcu
 	console.log('├─ Checking APCu configuration... 👀')
-	const distributed = await getSystemConfig(container, 'memcache.distributed')
-	const local = await getSystemConfig(container, 'memcache.local')
-	const hashing = await getSystemConfig(container, 'hashing_default_password')
+	const distributed = await getSystemConfig('memcache.distributed', { container })
+	const local = await getSystemConfig('memcache.local', { container })
+	const hashing = await getSystemConfig('hashing_default_password', { container })
 	if (!distributed.includes('Memcache\\APCu')
 		|| !local.includes('Memcache\\APCu')
 		|| !hashing.includes('true')) {
@@ -242,7 +242,7 @@ export const configureNextcloud = async function(apps = ['viewer'], vendoredBran
 	console.log('│  └─ OK !')
 
 	// Build app list
-	const json = await runOcc(container, ['app:list', '--output', 'json'], false)
+	const json = await runOcc(['app:list', '--output', 'json'], { container })
 	// fix dockerode bug returning invalid leading characters
 	const applist = JSON.parse(json.substring(json.indexOf('{')))
 
@@ -252,14 +252,14 @@ export const configureNextcloud = async function(apps = ['viewer'], vendoredBran
 			console.log(`├─ ${app} version ${applist.enabled[app]} already installed and enabled`)
 		} else if (app in applist.disabled) {
 			// built in or mounted already as the app under development
-			await runOcc(container, ['app:enable', '--force', app], true)
+			await runOcc(['app:enable', '--force', app], { container, verbose: true })
 		} else if (app in VENDOR_APPS) {
 			// apps that are vendored but still missing (i.e. not build in or mounted already)
-			await runExec(container, ['git', 'clone', '--depth=1', `--branch=${vendoredBranch}`, VENDOR_APPS[app], `apps/${app}`], true)
-			await runOcc(container, ['app:enable', '--force', app], true)
+			await runExec(['git', 'clone', '--depth=1', `--branch=${vendoredBranch}`, VENDOR_APPS[app], `apps/${app}`], { container, verbose: true })
+			await runOcc(['app:enable', '--force', app], { container, verbose: true })
 		} else {
 			// try appstore
-			await runOcc(container, ['app:install', '--force', app], true)
+			await runOcc(['app:install', '--force', app], { container, verbose: true })
 		}
 	}
 	console.log('└─ Nextcloud is now ready to use 🎉')
@@ -274,7 +274,7 @@ export const setupUsers = async function(container?: Container) {
 	console.log('\nCreating test users… 👤')
 	const users = ['test1', 'test2', 'test3', 'test4', 'test5']
 	for (const user of users) {
-		await runExec(container ?? getContainer(), ['php', 'occ', 'user:add', user, '--password-from-env'], true, 'www-data', ['OC_PASS=' + user])
+		await runExec(['php', 'occ', 'user:add', user, '--password-from-env'], { container, verbose: true, env: ['OC_PASS=' + user] })
 	}
 	console.log('└─ Done')
 }
@@ -288,7 +288,7 @@ export const setupUsers = async function(container?: Container) {
 export const createSnapshot = async function(snapshot?: string, container?: Container): Promise<string> {
 	const hash = new Date().toISOString().replace(/[^0-9]/g, '')
 	console.log('\nCreating init DB snapshot…')
-	await runExec(container ?? getContainer(), ['cp', '/var/www/html/data/owncloud.db', `/var/www/html/data/owncloud.db-${snapshot ?? hash}`], true)
+	await runExec(['cp', '/var/www/html/data/owncloud.db', `/var/www/html/data/owncloud.db-${snapshot ?? hash}`], { container, verbose: true })
 	console.log('└─ Done')
 	return snapshot ?? hash
 }
@@ -300,7 +300,7 @@ export const createSnapshot = async function(snapshot?: string, container?: Cont
  */
 export const restoreSnapshot = async function(snapshot = 'init', container?: Container) {
 	console.log('\nRestoring DB snapshot…')
-	await runExec(container ?? getContainer(), ['cp', `/var/www/html/data/owncloud.db-${snapshot}`, '/var/www/html/data/owncloud.db'], true)
+	await runExec(['cp', `/var/www/html/data/owncloud.db-${snapshot}`, '/var/www/html/data/owncloud.db'], { container, verbose: true })
 	console.log('└─ Done')
 }
 
@@ -356,13 +356,21 @@ export const waitOnNextcloud = async function(ip: string) {
 	console.log('└─ Done')
 }
 
+interface RunExecOptions {
+	container: Docker.Container;
+	user: string;
+	env: string[];
+	verbose: boolean;
+}
+
+/**
+ * Execute a command in the container
+ */
 export const runExec = async function(
-	container: Docker.Container,
 	command: string[],
-	verbose = false,
-	user = 'www-data',
-	env: string[] = [],
+	{ container, user='www-data', verbose=false, env=[] }: Partial<RunExecOptions> = {},
 ) {
+	container = container || getContainer()
 	const exec = await container.exec({
 		Cmd: command,
 		AttachStdout: true,
@@ -397,28 +405,35 @@ export const runExec = async function(
 	})
 }
 
+/**
+ * Execute an occ command in the container
+ */
 export const runOcc = function(
-	container: Docker.Container,
-	command: string[],
-	verbose = false,
-	env: string[] = [],
+	occCommand: string[],
+	{ container, env=[], verbose=false }: Partial<Omit<RunExecOptions, 'user'>> = {},
 ) {
-	return runExec(container, ['php', 'occ', ...command], verbose, 'www-data', env)
+	return runExec(['php', 'occ', ...occCommand], { container, verbose, env })
 }
 
+/**
+ * Set a Nextcloud system config in the container.
+ */
 export const setSystemConfig = function(
-	container: Docker.Container,
 	key: string,
 	value: string,
+	{ container }: { container?: Docker.Container } = {},
 ) {
-	return runOcc(container, ['config:system:set', key, '--value', value], true)
+	return runOcc(['config:system:set', key, '--value', value], { container, verbose: true })
 }
 
+/**
+ * Get a Nextcloud system config value from the container.
+ */
 export const getSystemConfig = function(
-	container: Docker.Container,
 	key: string,
+	{ container }: { container?: Docker.Container } = {},
 ) {
-	return runOcc(container, ['config:system:get', key])
+	return runOcc(['config:system:get', key], { container })
 }
 
 const sleep = function(milliseconds: number) {
