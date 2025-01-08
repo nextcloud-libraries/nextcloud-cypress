@@ -59,6 +59,11 @@ export default defineConfig({
 		// other configuration
 
 		setupNodeEvents(on, config) {
+			// Allow to run tests against an external instance
+			if (process.env.CYPRESS_baseUrl) {
+				return config
+			}
+
 			// Remove container after run
 			on('after:run', () => {
 				stopNextcloud()
