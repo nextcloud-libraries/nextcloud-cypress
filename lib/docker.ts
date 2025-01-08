@@ -219,20 +219,20 @@ export const configureNextcloud = async function(apps = ['viewer'], vendoredBran
 
 	console.log('\nConfiguring Nextcloud…')
 	container = container ?? getContainer()
-	await runExec(container, ['php', 'occ', '--version'], true)
+	await runOcc(container, ['--version'], true)
 
 	// Be consistent for screenshots
-	await runExec(container, ['php', 'occ', 'config:system:set', 'default_language', '--value', 'en'], true)
-	await runExec(container, ['php', 'occ', 'config:system:set', 'force_language', '--value', 'en'], true)
-	await runExec(container, ['php', 'occ', 'config:system:set', 'default_locale', '--value', 'en_US'], true)
-	await runExec(container, ['php', 'occ', 'config:system:set', 'force_locale', '--value', 'en_US'], true)
-	await runExec(container, ['php', 'occ', 'config:system:set', 'enforce_theme', '--value', 'light'], true)
+	await setSystemConfig(container, 'default_language', 'en')
+	await setSystemConfig(container, 'force_language', 'en')
+	await setSystemConfig(container, 'default_locale', 'en_US')
+	await setSystemConfig(container, 'force_locale', 'en_US')
+	await setSystemConfig(container, 'enforce_theme', 'light')
 
 	// Checking apcu
 	console.log('├─ Checking APCu configuration... 👀')
-	const distributed = await runExec(container, ['php', 'occ', 'config:system:get', 'memcache.distributed'])
-	const local = await runExec(container, ['php', 'occ', 'config:system:get', 'memcache.local'])
-	const hashing = await runExec(container, ['php', 'occ', 'config:system:get', 'hashing_default_password'])
+	const distributed = await getSystemConfig(container, 'memcache.distributed')
+	const local = await getSystemConfig(container, 'memcache.local')
+	const hashing = await getSystemConfig(container, 'hashing_default_password')
 	if (!distributed.includes('Memcache\\APCu')
 		|| !local.includes('Memcache\\APCu')
 		|| !hashing.includes('true')) {
@@ -242,7 +242,7 @@ export const configureNextcloud = async function(apps = ['viewer'], vendoredBran
 	console.log('│  └─ OK !')
 
 	// Build app list
-	const json = await runExec(container, ['php', 'occ', 'app:list', '--output', 'json'], false)
+	const json = await runOcc(container, ['app:list', '--output', 'json'], false)
 	// fix dockerode bug returning invalid leading characters
 	const applist = JSON.parse(json.substring(json.indexOf('{')))
 
@@ -252,14 +252,14 @@ export const configureNextcloud = async function(apps = ['viewer'], vendoredBran
 			console.log(`├─ ${app} version ${applist.enabled[app]} already installed and enabled`)
 		} else if (app in applist.disabled) {
 			// built in or mounted already as the app under development
-			await runExec(container, ['php', 'occ', 'app:enable', '--force', app], true)
+			await runOcc(container, ['app:enable', '--force', app], true)
 		} else if (app in VENDOR_APPS) {
 			// apps that are vendored but still missing (i.e. not build in or mounted already)
 			await runExec(container, ['git', 'clone', '--depth=1', `--branch=${vendoredBranch}`, VENDOR_APPS[app], `apps/${app}`], true)
-			await runExec(container, ['php', 'occ', 'app:enable', '--force', app], true)
+			await runOcc(container, ['app:enable', '--force', app], true)
 		} else {
 			// try appstore
-			await runExec(container, ['php', 'occ', 'app:install', '--force', app], true)
+			await runOcc(container, ['app:install', '--force', app], true)
 		}
 	}
 	console.log('└─ Nextcloud is now ready to use 🎉')
@@ -356,7 +356,7 @@ export const waitOnNextcloud = async function(ip: string) {
 	console.log('└─ Done')
 }
 
-const runExec = async function(
+export const runExec = async function(
 	container: Docker.Container,
 	command: string[],
 	verbose = false,
@@ -395,6 +395,30 @@ const runExec = async function(
 		dataStream.on('error', (err) => reject(err))
 		dataStream.on('end', () => resolve(data.join('')))
 	})
+}
+
+export const runOcc = function(
+	container: Docker.Container,
+	command: string[],
+	verbose = false,
+	env: string[] = [],
+) {
+	return runExec(container, ['php', 'occ', ...command], verbose, 'www-data', env)
+}
+
+export const setSystemConfig = function(
+	container: Docker.Container,
+	key: string,
+	value: string,
+) {
+	return runOcc(container, ['config:system:set', key, '--value', value], true)
+}
+
+export const getSystemConfig = function(
+	container: Docker.Container,
+	key: string,
+) {
+	return runOcc(container, ['config:system:get', key])
 }
 
 const sleep = function(milliseconds: number) {
