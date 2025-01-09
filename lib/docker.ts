@@ -274,7 +274,7 @@ export const setupUsers = async function(container?: Container) {
 	console.log('\nCreating test users… 👤')
 	const users = ['test1', 'test2', 'test3', 'test4', 'test5']
 	for (const user of users) {
-		await runExec(['php', 'occ', 'user:add', user, '--password-from-env'], { container, verbose: true, env: ['OC_PASS=' + user] })
+		await addUser(user, { container, verbose: true })
 	}
 	console.log('└─ Done')
 }
@@ -434,6 +434,20 @@ export const getSystemConfig = function(
 	{ container }: { container?: Docker.Container } = {},
 ) {
 	return runOcc(['config:system:get', key], { container })
+}
+
+
+/**
+ * Add a user to the Nextcloud in the container.
+ */
+export const addUser = function(
+	user: string,
+	{ container, env=[], verbose=false }: Partial<Omit<RunExecOptions, 'user'>> = {},
+) {
+	return runOcc(
+		['user:add', user, '--password-from-env'],
+		{ container, verbose, env: ['OC_PASS=' + user, ...env] }
+	)
 }
 
 const sleep = function(milliseconds: number) {
