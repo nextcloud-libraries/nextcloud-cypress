@@ -109,19 +109,7 @@ export async function startNextcloud(branch = 'master', mountApp: boolean|string
 	}
 
 	try {
-		// Pulling images
-		console.log('\nPulling images… ⏳')
-		await new Promise((resolve, reject) => docker.pull(SERVER_IMAGE, (_err, stream: Stream) => {
-			const onFinished = function(err: Error | null) {
-				if (!err) {
-					return resolve(true)
-				}
-				reject(err)
-			}
-			// https://github.com/apocas/dockerode/issues/357
-			docker.modem.followProgress(stream, onFinished)
-		}))
-		console.log('└─ Done')
+		await pullImage()
 
 		// Getting latest image
 		console.log('\nChecking running containers… 🔍')
@@ -205,6 +193,27 @@ export async function startNextcloud(branch = 'master', mountApp: boolean|string
 		stopNextcloud()
 		throw new Error('Unable to start the container')
 	}
+}
+
+const pullImage = function() {
+	// Pulling images
+	console.log('\nPulling images… ⏳')
+	return new Promise((resolve, reject) => docker.pull(SERVER_IMAGE, (_err, stream: Stream) => {
+		const onFinished = function(err: Error | null) {
+			if (!err) {
+				return resolve(true)
+			}
+			reject(err)
+		}
+		// https://github.com/apocas/dockerode/issues/357
+		if(stream) {
+			docker.modem.followProgress(stream, onFinished)
+		} else {
+			reject('Failed to open stream')
+		}
+	}))
+		.then(() => console.log('└─ Done'))
+		.catch(err => console.log(`└─ 🛑 FAILED! Trying to continue with existing image. (${err})`))
 }
 
 /**
