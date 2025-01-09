@@ -228,7 +228,7 @@ export const configureNextcloud = async function(apps = ['viewer'], vendoredBran
 
 	console.log('\nConfiguring Nextcloud…')
 	container = container ?? getContainer()
-	await runOcc(['--version'], { container, verbose: true })
+	await runOcc('--version', { container, verbose: true })
 
 	// Be consistent for screenshots
 	await setSystemConfig('default_language', 'en', { container })
@@ -376,12 +376,12 @@ interface RunExecOptions {
  * Execute a command in the container
  */
 export const runExec = async function(
-	command: string[],
+	command: string | string[],
 	{ container, user='www-data', verbose=false, env=[] }: Partial<RunExecOptions> = {},
 ) {
 	container = container || getContainer()
 	const exec = await container.exec({
-		Cmd: command,
+		Cmd: typeof command === 'string' ? [command] : command,
 		AttachStdout: true,
 		AttachStderr: true,
 		User: user,
@@ -418,10 +418,11 @@ export const runExec = async function(
  * Execute an occ command in the container
  */
 export const runOcc = function(
-	occCommand: string[],
+	command: string | string[],
 	{ container, env=[], verbose=false }: Partial<Omit<RunExecOptions, 'user'>> = {},
 ) {
-	return runExec(['php', 'occ', ...occCommand], { container, verbose, env })
+	const cmdArray = typeof command === 'string' ? [command] : command
+	return runExec(['php', 'occ', ...cmdArray], { container, verbose, env })
 }
 
 /**
