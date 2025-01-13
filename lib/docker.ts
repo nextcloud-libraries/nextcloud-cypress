@@ -77,7 +77,7 @@ interface StartOptions {
  *
  * @param {string|undefined} branch server branch to use (default 'master')
  * @param {boolean|string|undefined} mountApp bind mount app within server (`true` for autodetect, `false` to disable, or a string to force a path) (default true)
- * @param {StartOptions|undefined} options Optional parameters to configre the container creation
+ * @param {StartOptions|undefined} options Optional parameters to configure the container creation
  * @return Promise resolving to the IP address of the server
  * @throws {Error} If Nextcloud container could not be started
  */
@@ -109,19 +109,7 @@ export async function startNextcloud(branch = 'master', mountApp: boolean|string
 	}
 
 	try {
-		// Pulling images
-		console.log('\nPulling images… ⏳')
-		await new Promise((resolve, reject) => docker.pull(SERVER_IMAGE, (_err, stream: Stream) => {
-			const onFinished = function(err: Error | null) {
-				if (!err) {
-					return resolve(true)
-				}
-				reject(err)
-			}
-			// https://github.com/apocas/dockerode/issues/357
-			docker.modem.followProgress(stream, onFinished)
-		}))
-		console.log('└─ Done')
+		await pullImage()
 
 		// Getting latest image
 		console.log('\nChecking running containers… 🔍')
@@ -189,8 +177,8 @@ export async function startNextcloud(branch = 'master', mountApp: boolean|string
 		await container.start()
 
 		// Set proper permissions for the data folder
-		await runExec(container, ['chown', '-R', 'www-data:www-data', '/var/www/html/data'], false, 'root')
-		await runExec(container, ['chmod', '0770', '/var/www/html/data'], false, 'root')
+		await runExec(['chown', '-R', 'www-data:www-data', '/var/www/html/data'], { container, user: 'root' })
+		await runExec(['chmod', '0770', '/var/www/html/data'], { container, user: 'root' })
 
 		// Get container's IP
 		const ip = await getContainerIP(container)
@@ -207,6 +195,27 @@ export async function startNextcloud(branch = 'master', mountApp: boolean|string
 	}
 }
 
+const pullImage = function() {
+	// Pulling images
+	console.log('\nPulling images… ⏳')
+	return new Promise((resolve, reject) => docker.pull(SERVER_IMAGE, (_err, stream: Stream) => {
+		const onFinished = function(err: Error | null) {
+			if (!err) {
+				return resolve(true)
+			}
+			reject(err)
+		}
+		// https://github.com/apocas/dockerode/issues/357
+		if(stream) {
+			docker.modem.followProgress(stream, onFinished)
+		} else {
+			reject('Failed to open stream')
+		}
+	}))
+		.then(() => console.log('└─ Done'))
+		.catch(err => console.log(`└─ 🛑 FAILED! Trying to continue with existing image. (${err})`))
+}
+
 /**
  * Configure Nextcloud
  *
@@ -219,20 +228,20 @@ export const configureNextcloud = async function(apps = ['viewer'], vendoredBran
 
 	console.log('\nConfiguring Nextcloud…')
 	container = container ?? getContainer()
-	await runExec(container, ['php', 'occ', '--version'], true)
+	await runOcc('--version', { container, verbose: true })
 
 	// Be consistent for screenshots
-	await runExec(container, ['php', 'occ', 'config:system:set', 'default_language', '--value', 'en'], true)
-	await runExec(container, ['php', 'occ', 'config:system:set', 'force_language', '--value', 'en'], true)
-	await runExec(container, ['php', 'occ', 'config:system:set', 'default_locale', '--value', 'en_US'], true)
-	await runExec(container, ['php', 'occ', 'config:system:set', 'force_locale', '--value', 'en_US'], true)
-	await runExec(container, ['php', 'occ', 'config:system:set', 'enforce_theme', '--value', 'light'], true)
+	await setSystemConfig('default_language', 'en', { container })
+	await setSystemConfig('force_language', 'en', { container })
+	await setSystemConfig('default_locale', 'en_US', { container })
+	await setSystemConfig('force_locale', 'en_US', { container })
+	await setSystemConfig('enforce_theme', 'light', { container })
 
 	// Checking apcu
 	console.log('├─ Checking APCu configuration... 👀')
-	const distributed = await runExec(container, ['php', 'occ', 'config:system:get', 'memcache.distributed'])
-	const local = await runExec(container, ['php', 'occ', 'config:system:get', 'memcache.local'])
-	const hashing = await runExec(container, ['php', 'occ', 'config:system:get', 'hashing_default_password'])
+	const distributed = await getSystemConfig('memcache.distributed', { container })
+	const local = await getSystemConfig('memcache.local', { container })
+	const hashing = await getSystemConfig('hashing_default_password', { container })
 	if (!distributed.includes('Memcache\\APCu')
 		|| !local.includes('Memcache\\APCu')
 		|| !hashing.includes('true')) {
@@ -242,7 +251,7 @@ export const configureNextcloud = async function(apps = ['viewer'], vendoredBran
 	console.log('│  └─ OK !')
 
 	// Build app list
-	const json = await runExec(container, ['php', 'occ', 'app:list', '--output', 'json'], false)
+	const json = await runOcc(['app:list', '--output', 'json'], { container })
 	// fix dockerode bug returning invalid leading characters
 	const applist = JSON.parse(json.substring(json.indexOf('{')))
 
@@ -252,14 +261,14 @@ export const configureNextcloud = async function(apps = ['viewer'], vendoredBran
 			console.log(`├─ ${app} version ${applist.enabled[app]} already installed and enabled`)
 		} else if (app in applist.disabled) {
 			// built in or mounted already as the app under development
-			await runExec(container, ['php', 'occ', 'app:enable', '--force', app], true)
+			await runOcc(['app:enable', '--force', app], { container, verbose: true })
 		} else if (app in VENDOR_APPS) {
 			// apps that are vendored but still missing (i.e. not build in or mounted already)
-			await runExec(container, ['git', 'clone', '--depth=1', `--branch=${vendoredBranch}`, VENDOR_APPS[app], `apps/${app}`], true)
-			await runExec(container, ['php', 'occ', 'app:enable', '--force', app], true)
+			await runExec(['git', 'clone', '--depth=1', `--branch=${vendoredBranch}`, VENDOR_APPS[app], `apps/${app}`], { container, verbose: true })
+			await runOcc(['app:enable', '--force', app], { container, verbose: true })
 		} else {
 			// try appstore
-			await runExec(container, ['php', 'occ', 'app:install', '--force', app], true)
+			await runOcc(['app:install', '--force', app], { container, verbose: true })
 		}
 	}
 	console.log('└─ Nextcloud is now ready to use 🎉')
@@ -274,7 +283,7 @@ export const setupUsers = async function(container?: Container) {
 	console.log('\nCreating test users… 👤')
 	const users = ['test1', 'test2', 'test3', 'test4', 'test5']
 	for (const user of users) {
-		await runExec(container ?? getContainer(), ['php', 'occ', 'user:add', user, '--password-from-env'], true, 'www-data', ['OC_PASS=' + user])
+		await addUser(user, { container, verbose: true })
 	}
 	console.log('└─ Done')
 }
@@ -288,7 +297,7 @@ export const setupUsers = async function(container?: Container) {
 export const createSnapshot = async function(snapshot?: string, container?: Container): Promise<string> {
 	const hash = new Date().toISOString().replace(/[^0-9]/g, '')
 	console.log('\nCreating init DB snapshot…')
-	await runExec(container ?? getContainer(), ['cp', '/var/www/html/data/owncloud.db', `/var/www/html/data/owncloud.db-${snapshot ?? hash}`], true)
+	await runExec(['cp', '/var/www/html/data/owncloud.db', `/var/www/html/data/owncloud.db-${snapshot ?? hash}`], { container, verbose: true })
 	console.log('└─ Done')
 	return snapshot ?? hash
 }
@@ -300,7 +309,7 @@ export const createSnapshot = async function(snapshot?: string, container?: Cont
  */
 export const restoreSnapshot = async function(snapshot = 'init', container?: Container) {
 	console.log('\nRestoring DB snapshot…')
-	await runExec(container ?? getContainer(), ['cp', `/var/www/html/data/owncloud.db-${snapshot}`, '/var/www/html/data/owncloud.db'], true)
+	await runExec(['cp', `/var/www/html/data/owncloud.db-${snapshot}`, '/var/www/html/data/owncloud.db'], { container, verbose: true })
 	console.log('└─ Done')
 }
 
@@ -356,15 +365,23 @@ export const waitOnNextcloud = async function(ip: string) {
 	console.log('└─ Done')
 }
 
-const runExec = async function(
-	container: Docker.Container,
-	command: string[],
-	verbose = false,
-	user = 'www-data',
-	env: string[] = [],
+interface RunExecOptions {
+	container: Docker.Container;
+	user: string;
+	env: string[];
+	verbose: boolean;
+}
+
+/**
+ * Execute a command in the container
+ */
+export const runExec = async function(
+	command: string | string[],
+	{ container, user='www-data', verbose=false, env=[] }: Partial<RunExecOptions> = {},
 ) {
+	container = container || getContainer()
 	const exec = await container.exec({
-		Cmd: command,
+		Cmd: typeof command === 'string' ? [command] : command,
 		AttachStdout: true,
 		AttachStderr: true,
 		User: user,
@@ -395,6 +412,52 @@ const runExec = async function(
 		dataStream.on('error', (err) => reject(err))
 		dataStream.on('end', () => resolve(data.join('')))
 	})
+}
+
+/**
+ * Execute an occ command in the container
+ */
+export const runOcc = function(
+	command: string | string[],
+	{ container, env=[], verbose=false }: Partial<Omit<RunExecOptions, 'user'>> = {},
+) {
+	const cmdArray = typeof command === 'string' ? [command] : command
+	return runExec(['php', 'occ', ...cmdArray], { container, verbose, env })
+}
+
+/**
+ * Set a Nextcloud system config in the container.
+ */
+export const setSystemConfig = function(
+	key: string,
+	value: string,
+	{ container }: { container?: Docker.Container } = {},
+) {
+	return runOcc(['config:system:set', key, '--value', value], { container, verbose: true })
+}
+
+/**
+ * Get a Nextcloud system config value from the container.
+ */
+export const getSystemConfig = function(
+	key: string,
+	{ container }: { container?: Docker.Container } = {},
+) {
+	return runOcc(['config:system:get', key], { container })
+}
+
+
+/**
+ * Add a user to the Nextcloud in the container.
+ */
+export const addUser = function(
+	user: string,
+	{ container, env=[], verbose=false }: Partial<Omit<RunExecOptions, 'user'>> = {},
+) {
+	return runOcc(
+		['user:add', user, '--password-from-env'],
+		{ container, verbose, env: ['OC_PASS=' + user, ...env] }
+	)
 }
 
 const sleep = function(milliseconds: number) {
