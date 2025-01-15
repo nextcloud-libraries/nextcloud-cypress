@@ -158,6 +158,9 @@ export async function startNextcloud(branch = 'master', mountApp: boolean|string
 			}],
 		}
 
+		// On macOS we need to expose the port since the docker container is running within a VM
+		const autoExposePort = process.platform === 'darwin'
+
 		const container = await docker.createContainer({
 			Image: SERVER_IMAGE,
 			name: getContainerName(),
@@ -165,6 +168,7 @@ export async function startNextcloud(branch = 'master', mountApp: boolean|string
 			HostConfig: {
 				Binds: mounts.length > 0 ? mounts : undefined,
 				PortBindings,
+				PublishAllPorts: autoExposePort,
 				// Mount data directory in RAM for faster IO
 				Mounts: [{
 					Target: '/var/www/html/data',
@@ -335,6 +339,13 @@ export const stopNextcloud = async function() {
 export const getContainerIP = async function(
 	container = getContainer()
 ): Promise<string> {
+	const containerInspect = await container.inspect()
+	const hostPort = containerInspect.NetworkSettings.Ports['80/tcp']?.[0]?.HostPort
+
+	if (hostPort) {
+		return `localhost:${hostPort}`
+	}
+
 	let ip = ''
 	let tries = 0
 	while (ip === '' && tries < 10) {
