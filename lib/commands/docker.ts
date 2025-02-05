@@ -11,7 +11,7 @@ function basename(path: string): string {
 function getContainerName(): Cypress.Chainable<string> {
 	return cy.exec('pwd').then(({ stdout }) => {
 		const name = basename(stdout).replace(' ', '')
-		return cy.wrap(`nextcloud-cypress-tests_${name}`)
+		return cy.wrap(`nextcloud-e2e-test-server_${name}`)
 	})
 }
 
