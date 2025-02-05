@@ -4,7 +4,7 @@
  */
 // Making sure we're forcing the development mode
 process.env.NODE_ENV = 'development'
-process.env.npm_package_name = 'nextcloud-cypress'
+process.env.npm_package_name = 'nextcloud-e2e-test-server'
 
 /* eslint-disable import/first */
 import { configureNextcloud, createSnapshot, setupUsers, startNextcloud, stopNextcloud, waitOnNextcloud } from './lib/docker'

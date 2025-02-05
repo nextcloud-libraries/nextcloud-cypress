@@ -36,7 +36,7 @@ let _serverBranch = 'master'
 export const getContainerName = function(): string {
 	if (_containerName === null) {
 		const app = basename(process.cwd()).replace(' ', '')
-		_containerName = `nextcloud-cypress-tests_${app}`
+		_containerName = `nextcloud-e2e-test-server_${app}`
 	}
 	return _containerName
 }

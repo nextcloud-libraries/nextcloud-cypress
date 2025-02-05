@@ -117,8 +117,8 @@ declare global {
  * Register all existing commands provided by this library
  *
  * You can also manually register those commands by importing them
- * @example import { getNc } from '@nextcloud/cypress/commands'
- *          Cypress.Commands.add('getNc', getNc)
+ * @example import { login } from '@nextcloud/e2e-test-server/commands'
+ *          Cypress.Commands.add('login', login)
  */
 export const addCommands = function() {
 	Cypress.Commands.add('getNc', getNc)
