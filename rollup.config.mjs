@@ -10,7 +10,7 @@ import packageJSON from './package.json' assert { type: 'json' }
 
 const external = [
 	...Object.keys(packageJSON.dependencies),
-	...Object.keys(packageJSON.peerDependencies)
+	...Object.keys(packageJSON.peerDependencies ?? {})
 ]
 
 const config = (input, output) => ({
