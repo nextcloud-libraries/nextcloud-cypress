@@ -1,6 +1,6 @@
 {
   "name": "@nextcloud/e2e-test-server",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Nextcloud e2e test server and utils for cypress and playwright",
   "publishConfig": {
     "access": "public"
@@ -38,11 +38,11 @@
   "license": "AGPL-3.0-or-later",
   "keywords": [
     "nextcloud",
-	"docker",
-	"e2e",
-	"testing",
+    "docker",
+    "e2e",
+    "testing",
     "cypress",
-	"playwright",
+    "playwright",
     "selector",
     "plugins",
     "library"
