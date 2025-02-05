@@ -1,6 +1,6 @@
 {
   "name": "@nextcloud/e2e-test-server",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Nextcloud e2e test server and utils for cypress and playwright",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
