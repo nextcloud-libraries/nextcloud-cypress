@@ -2,6 +2,9 @@
   "name": "@nextcloud/e2e-test-server",
   "version": "0.1.1",
   "description": "Nextcloud e2e test server and utils for cypress and playwright",
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "dist/index.cjs",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
