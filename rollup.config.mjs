@@ -60,12 +60,23 @@ export default [
 		sourcemap: true,
 	}),
 
+	// Docker tooling for the test server
 	config('./lib/docker.ts', {
 		file: 'dist/docker.mjs',
 		format: 'esm',
 	}),
 	config('./lib/docker.ts', {
 		file: 'dist/docker.js',
+		format: 'cjs',
+	}),
+
+	// Cypress commands and utils
+	config('./lib/cypress.ts', {
+		file: 'dist/cypress.mjs',
+		format: 'esm',
+	}),
+	config('./lib/cypress.ts', {
+		file: 'dist/cypress.js',
 		format: 'cjs',
 	}),
 ]

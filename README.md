@@ -28,7 +28,7 @@ Please take a look at the [forms app](https://github.com/nextcloud/forms) for an
 You can use the `cypress` folder and the `cypress.config.ts` in this repository as starting points or adjust your `cypress.config.ts` (or `.js`):
 
 ```js
-import { configureNextcloud,  startNextcloud,  stopNextcloud, waitOnNextcloud } from '@nextcloud/cypress/docker'
+import { configureNextcloud,  startNextcloud,  stopNextcloud, waitOnNextcloud } from '@nextcloud/e2e-test-server'
 
 export default defineConfig({
 // ...
@@ -66,16 +66,16 @@ You can find [the list of all available commands here](https://nextcloud.github.
 
 ```js
 // cypress/support/commands.js
-import { addCommands } from '@nextcloud/cypress'
+import { addCommands } from '@nextcloud/e2e-test-server/cypress'
 
 addCommands()
 ```
 
 ```js
 // cypress/support/commands.js
-import { getNc } from '@nextcloud/cypress/commands'
+import { login } from '@nextcloud/e2e-test-server/commands'
 
-Cypress.Commands.add('getNc', getNc)
+Cypress.Commands.add('login', login)
 ```
 
 ## Selectors (:warn: deprecated)
