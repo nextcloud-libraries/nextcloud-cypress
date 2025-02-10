@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import type { User } from "./users"
+import type { User } from "../User"
 
 /**
  * You should always upload files and/or create users

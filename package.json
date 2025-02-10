@@ -24,6 +24,11 @@
       "import": "./dist/docker.mjs",
       "require": "./dist/docker.js"
     },
+    "./cypress": {
+      "types": "./dist/cypress.d.ts",
+      "import": "./dist/cypress.mjs",
+      "require": "./dist/cypress.js"
+    },
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",

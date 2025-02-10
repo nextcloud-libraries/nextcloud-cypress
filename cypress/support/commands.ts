@@ -14,5 +14,5 @@
 // ***********************************************
 //
 
-import { addCommands } from '../../dist/'
+import { addCommands } from '../../dist/cypress'
 addCommands()
