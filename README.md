@@ -8,6 +8,14 @@
 
 Nextcloud cypress helpers for Nextcloud apps and libraries
 
+## New package available
+
+`@nextcloud/e2e-test-server` is a more generic version of `@nextcloud/cypress`
+that will work nicely with both cypress and playwright.
+
+It will eventually superseed `@nextcloud/cypress`.
+When starting a new project we recommend using `@nextcloud/e2e-test-server`.
+
 ## Commands
 
 You can import individual commands or all at once
