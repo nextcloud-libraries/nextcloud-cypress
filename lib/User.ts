@@ -13,5 +13,10 @@ export class User {
 		this.password = password
 		this.language = language
 	}
+
+	static createRandom() {
+		const uid = (Math.random() + 1).toString(36).substring(7)
+		return new User(uid)
+	}
 }
 
