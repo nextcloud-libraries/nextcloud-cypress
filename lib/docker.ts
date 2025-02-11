@@ -15,6 +15,8 @@ import { basename, join, resolve, sep } from 'path'
 import { existsSync, readFileSync } from 'fs'
 import { XMLParser } from 'fast-xml-parser'
 
+import { User } from './User'
+
 const SERVER_IMAGE = 'ghcr.io/nextcloud/continuous-integration-shallow-server'
 const VENDOR_APPS = {
 	text: 'https://github.com/nextcloud/text.git',
@@ -286,6 +288,7 @@ export const configureNextcloud = async function(apps = ['viewer'], vendoredBran
 export const setupUsers = async function(container?: Container) {
 	console.log('\nCreating test users… 👤')
 	const users = ['test1', 'test2', 'test3', 'test4', 'test5']
+		.map(uid => new User(uid))
 	for (const user of users) {
 		await addUser(user, { container, verbose: true })
 	}
@@ -462,12 +465,12 @@ export const getSystemConfig = function(
  * Add a user to the Nextcloud in the container.
  */
 export const addUser = function(
-	user: string,
+	user: User,
 	{ container, env=[], verbose=false }: Partial<Omit<RunExecOptions, 'user'>> = {},
 ) {
 	return runOcc(
-		['user:add', user, '--password-from-env'],
-		{ container, verbose, env: ['OC_PASS=' + user, ...env] }
+		['user:add', user.userId, '--password-from-env'],
+		{ container, verbose, env: ['OC_PASS=' + user.password, ...env] }
 	)
 }
 

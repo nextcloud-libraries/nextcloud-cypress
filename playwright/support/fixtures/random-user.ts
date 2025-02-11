@@ -17,8 +17,8 @@ export const test = base.extend({
 			baseURL,
 		})
 
-		const uid = await createRandomUser()
-		await login(page.request, uid, uid)
+		const user = await createRandomUser()
+		await login(page.request, user)
 
 		await use(page)
 		await page.close()
