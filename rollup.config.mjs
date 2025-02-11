@@ -10,7 +10,7 @@ import packageJSON from './package.json' assert { type: 'json' }
 
 const external = [
 	...Object.keys(packageJSON.dependencies),
-	...Object.keys(packageJSON.peerDependencies)
+	...Object.keys(packageJSON.peerDependencies ?? {})
 ]
 
 const config = (input, output) => ({
@@ -60,12 +60,33 @@ export default [
 		sourcemap: true,
 	}),
 
+	// Docker tooling for the test server
 	config('./lib/docker.ts', {
 		file: 'dist/docker.mjs',
 		format: 'esm',
 	}),
 	config('./lib/docker.ts', {
 		file: 'dist/docker.js',
+		format: 'cjs',
+	}),
+
+	// Cypress commands and utils
+	config('./lib/cypress.ts', {
+		file: 'dist/cypress.mjs',
+		format: 'esm',
+	}),
+	config('./lib/cypress.ts', {
+		file: 'dist/cypress.js',
+		format: 'cjs',
+	}),
+
+	// Playwright commands and utils
+	config('./lib/playwright.ts', {
+		file: 'dist/playwright.mjs',
+		format: 'esm',
+	}),
+	config('./lib/playwright.ts', {
+		file: 'dist/playwright.js',
 		format: 'cjs',
 	}),
 ]
