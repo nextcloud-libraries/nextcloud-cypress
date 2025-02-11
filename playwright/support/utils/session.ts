@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { runExec, addUser } from '../../../dist'
+import { runExec, addUser, User } from '../../../dist'
 import { expect, type APIRequestContext } from '@playwright/test'
 
 /**
@@ -21,8 +21,7 @@ export function restoreDatabase() {
  */
 export async function login(
 	request: APIRequestContext,
-	user: string,
-	password: string,
+	user: User,
 ) {
 	const tokenResponse = await request.get('./csrftoken')
 	expect(tokenResponse.status()).toBe(200)
@@ -30,8 +29,8 @@ export async function login(
 
 	const loginResponse = await request.post('./login', {
 		form: {
-			user,
-			password,
+			user: user.userId,
+			password: user.password,
 			requesttoken,
 		},
 		headers: {
@@ -45,11 +44,11 @@ export async function login(
 }
 
 /**
- * Create a new random user (password is set to the UID)
- * @return The UID of the new user
+ * Create a new random user
+ * @return The new user
  */
-export async function createRandomUser(): Promise<string> {
-	const uid = (Math.random() + 1).toString(36).substring(7)
-	await addUser(uid)
-	return uid
+export async function createRandomUser(): Promise<User> {
+	const user = User.createRandom()
+	await addUser(user)
+	return user
 }
