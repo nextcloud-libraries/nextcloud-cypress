@@ -11,6 +11,7 @@ test.beforeEach(async ({ page }) => {
 	await page.waitForURL(/apps\/files/)
 })
 
-test('Random user is authenticated', async ({ page }) => {
+test('Random user is authenticated', async ({ page, user }) => {
 	await expect(page.getByLabel('Settings menu')).toBeVisible()
+	expect(user.userId).toEqual(user.password)
 })
