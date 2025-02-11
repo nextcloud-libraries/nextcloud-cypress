@@ -25,9 +25,29 @@ In particular cypress specific utils such as selectors will be dropped unless th
 
 ### Playwright
 
-This repository does not include playwritght configurations or examples yet.
+1. Copy `playwright.config.mjs` and `playwright` folder from this repository!
+2. Add the `@playwright/test` dependency:
+  ```
+    npm install --save-dev '@playwright/test'
+  ```
+3. Add the `start:nextcloud` script to your package.json
+  ```json
+    {
+      "start:nextcloud": "node playwright/start-nextcloud-server.mjs",
+    }
+  ```
+4. Install chromium for playwright:
+  ```
+    npx playwright install chromium --only-shell
+  ```
+5. Run playwright tests:
+  ```
+    npx playwright test
+  ```
+6. Add `.github/workflows/playwright.yml` to your repository!
+7. Write your own tests!
 
-Please take a look at the [forms app](https://github.com/nextcloud/forms) for an example of using `@nextlcloud/e2e-test-server` with playwright.
+
 
 ### Cypress
 

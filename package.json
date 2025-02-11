@@ -64,7 +64,8 @@
     "cypress": "npm run cypress:e2e && npm run cypress:component",
     "cypress:e2e": "cypress run --e2e",
     "cypress:component": "cypress run --component",
-    "cypress:gui": "cypress open"
+    "cypress:gui": "cypress open",
+    "start:nextcloud": "node playwright/start-nextcloud-server.mjs"
   },
   "repository": {
     "type": "git",
@@ -87,6 +88,7 @@
     "@cypress/code-coverage": "^3.12.39",
     "@nextcloud/upload": "^1.1.1",
     "@nextcloud/webpack-vue-config": "^6.0.1",
+    "@playwright/test": "^1.50.1",
     "@rollup/plugin-commonjs": "^28.0.1",
     "@rollup/plugin-node-resolve": "^16.0.0",
     "@rollup/plugin-typescript": "^12.1.1",
