@@ -4,7 +4,7 @@
  */
 
 import { test as base } from '@playwright/test'
-import { createRandomUser, login } from '../utils/session'
+import { createRandomUser, login } from '../../../dist/playwright'
 
 interface RandomUserFixture {
 	user: User

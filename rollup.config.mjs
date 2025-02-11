@@ -79,4 +79,14 @@ export default [
 		file: 'dist/cypress.js',
 		format: 'cjs',
 	}),
+
+	// Playwright commands and utils
+	config('./lib/playwright.ts', {
+		file: 'dist/playwright.mjs',
+		format: 'esm',
+	}),
+	config('./lib/playwright.ts', {
+		file: 'dist/playwright.js',
+		format: 'cjs',
+	}),
 ]
