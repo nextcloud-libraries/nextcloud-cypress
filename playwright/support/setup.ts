@@ -4,7 +4,7 @@
  */
 
 import { test as setup } from '@playwright/test'
-import { configureNextcloud } from '../../dist'
+import { configureNextcloud } from '@nextcloud/e2e-test-server'
 
 /**
  * We use this to ensure Nextcloud is configured correctly before running our tests

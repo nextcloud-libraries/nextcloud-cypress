@@ -4,7 +4,7 @@
  */
 
 import { test as base } from '@playwright/test'
-import { createRandomUser, login } from '../../../dist/playwright'
+import { createRandomUser, login } from '@nextcloud/e2e-test-server/playwright'
 
 interface RandomUserFixture {
 	user: User
