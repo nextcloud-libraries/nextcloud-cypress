@@ -65,3 +65,7 @@ typings/
 /dist
 cypress/screenshots
 cypress/videos
+
+# playwright artifacts
+test-results/
+playwright-report/
