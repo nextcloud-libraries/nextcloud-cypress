@@ -29,6 +29,11 @@
       "import": "./dist/cypress.mjs",
       "require": "./dist/cypress.js"
     },
+    "./playwright": {
+      "types": "./dist/playwright.d.ts",
+      "import": "./dist/playwright.mjs",
+      "require": "./dist/playwright.js"
+    },
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
