@@ -3,7 +3,10 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { basename } from 'path'
+function basename(path: string): string {
+	return path.split('/').pop() as string
+}
+
 
 function getContainerName(): Cypress.Chainable<string> {
 	return cy.exec('pwd').then(({ stdout }) => {
