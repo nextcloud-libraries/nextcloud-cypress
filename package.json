@@ -71,7 +71,7 @@
   },
   "dependencies": {
     "dockerode": "^4.0.2",
-    "fast-xml-parser": "^4.3.6",
+    "fast-xml-parser": "^5.1.0",
     "wait-on": "^8.0.0"
   },
   "devDependencies": {
