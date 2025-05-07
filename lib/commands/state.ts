@@ -20,5 +20,10 @@ export function restoreState(snapshot: string = 'init') {
 	runCommand(`rm -vfr ./data/*`)
 	runCommand(`tar -xf '/var/www/html/data-${snapshot}.tar'`)
 
+	// Any user sessions created between saveState() and restoreState()
+	// are not present in the database, but exist in the web server.
+	// Using them leads to unknown behavior, so we clear them all to prevent session errors.
+	Cypress.session.clearAllSavedSessions()
+
 	cy.log(`Restored snapshot ${snapshot}`)
 }
