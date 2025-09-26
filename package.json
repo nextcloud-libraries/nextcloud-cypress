@@ -85,7 +85,7 @@
     "@types/dockerode": "^3.3.28",
     "@types/jest": "^30.0.0",
     "@vue/cli-service": "^5.0.8",
-    "@vue/tsconfig": "^0.5.1",
+    "@vue/tsconfig": "^0.7.0",
     "cypress": "^13.7.2",
     "jest": "^30.0.3",
     "jest-environment-jsdom": "^29.7.0",
