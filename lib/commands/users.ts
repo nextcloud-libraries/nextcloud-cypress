@@ -3,17 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-export class User {
-	userId: string
-	password: string
-	language: string
-
-	constructor(user: string, password: string = user, language = 'en') {
-		this.userId = user
-		this.password = password
-		this.language = language
-	}
-}
+import { User } from "../User"
 
 export const randHash = () => Math.random().toString(36).replace(/[^a-z]+/g, '').slice(0, 10)
 
@@ -40,8 +30,8 @@ export const createUser = function(user: User): Cypress.Chainable<Cypress.Respon
 	return cy.request({
 		method: 'POST',
 		url,
-		body: { 
-			userid: user.userId, 
+		body: {
+			userid: user.userId,
 			password: user.password
 		},
 		auth: {
@@ -168,7 +158,7 @@ export const modifyUser = function(user: User, key: string, value: any): Cypress
 
 /**
  * Query metadata for and in behalf of a given user
- * 
+ *
  * @param user User to change
  */
 export const getUserData = function(user: User): Cypress.Chainable<Cypress.Response<any>> {

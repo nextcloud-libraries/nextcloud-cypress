@@ -3,15 +3,12 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-function basename(path: string): string {
-	return path.split('/').pop() as string
-}
-
+import { basename } from '@nextcloud/paths'
 
 function getContainerName(): Cypress.Chainable<string> {
 	return cy.exec('pwd').then(({ stdout }) => {
 		const name = basename(stdout).replace(' ', '')
-		return cy.wrap(`nextcloud-cypress-tests_${name}`)
+		return cy.wrap(`nextcloud-e2e-test-server_${name}`)
 	})
 }
 
