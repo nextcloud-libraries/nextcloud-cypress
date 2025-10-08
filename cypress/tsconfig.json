@@ -1,4 +1,19 @@
 {
-	"extends": "../tsconfig.json",
-	"include": ["./**/*.ts"],
+	"extends": "@vue/tsconfig/tsconfig.json",
+	"include": ["../lib/**/*.ts", "./**/*.ts"],
+	"compilerOptions": {
+		"types": ["cypress", "node"],
+		"lib": ["ES2022", "DOM", "DOM.Iterable"],
+		"allowSyntheticDefaultImports": true,
+		"moduleResolution": "node",
+		// ES2015 is the latest version supported by cypress (besides CommonJS)
+		"target": "ES2015",
+		"module": "ES2015",
+		"declaration": true,
+		"strict": true,
+		"noImplicitAny": false,
+		"outDir": "./dist",
+		// https://github.com/vuejs/tsconfig/issues/6
+		"ignoreDeprecations": "5.0"	
+	},
 }

@@ -85,7 +85,7 @@ export function listUsers(details = false): Cypress.Chainable<Record<string, str
 		} else {
 			const list = Array.from(xmlDoc.querySelectorAll('users > *')).map(v => {
 				//  We only handle simple text properties for the moment
-				const properties = [...v.childNodes].filter(c => c.childNodes.length <= 1)
+				const properties = Array.from(v.childNodes).filter(c => c.childNodes.length <= 1)
 
 				return Object.fromEntries(properties.map(p => [p.nodeName, p.textContent || '']))
 			})
