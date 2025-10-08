@@ -4,17 +4,9 @@
 -->
 # \@nextcloud/e2e-test-server
 
-[![REUSE status](https://api.reuse.software/badge/github.com/nextcloud-libraries/nextcloud-cypress)](https://api.reuse.software/info/github.com/nextcloud-libraries/nextcloud-cypress) [![npm last version](https://img.shields.io/npm/v/@nextcloud/e2e-test-server.svg?style=flat-square)](https://www.npmjs.com/package/@nextcloud/e2e-test-server) ![Codecov](https://img.shields.io/codecov/c/github/nextcloud/nextcloud-cypress?style=flat-square)
+[![REUSE status](https://api.reuse.software/badge/github.com/nextcloud-libraries/nextcloud-e2e-test-server)](https://api.reuse.software/info/github.com/nextcloud-libraries/nextcloud-e2e-test-server) [![npm last version](https://img.shields.io/npm/v/@nextcloud/e2e-test-server.svg?style=flat-square)](https://www.npmjs.com/package/@nextcloud/e2e-test-server) ![Codecov](https://img.shields.io/codecov/c/github/nextcloud/nextcloud-e2e-test-server?style=flat-square)
 
 Nextcloud e2e test server and utils for cypress and playwright.
-
-## New package available
-
-`@nextcloud/e2e-test-server` is a more generic version of `@nextcloud/cypress`
-that will work nicely with both cypress and playwright.
-
-It will eventually superseed `@nextcloud/cypress`.
-When starting a new project we recommend using `@nextcloud/e2e-test-server`.
 
 ## Status
 
@@ -88,7 +80,7 @@ export default defineConfig({
 ## Cypress commands
 
 You can import individual commands or all at once
-You can find [the list of all available commands here](https://nextcloud.github.io/nextcloud-cypress/modules/commands.html) 
+You can find [the list of all available commands here](https://nextcloud.github.io/nextcloud-e2e-test-server/modules/commands.html) 
 
 ```js
 // cypress/support/commands.js
@@ -106,11 +98,11 @@ Cypress.Commands.add('login', login)
 
 ## Selectors (:warn: deprecated)
 
-You can find [the list of all available selectors here](https://nextcloud.github.io/nextcloud-cypress/modules/selectors.html) 
+You can find [the list of all available selectors here](https://nextcloud.github.io/nextcloud-e2e-test-server/modules/selectors.html) 
 
 ```js
 import { UploadPicker as UploadPickerComponent} from '../../dist/index.js'
-import { UploadPicker, UploadPickerInput } from '@nextcloud/cypress/selectors'
+import { UploadPicker, UploadPickerInput } from '@nextcloud/e2e-test-server/selectors'
 
 describe('UploadPicker rendering', () => {
 	it('Renders default UploadPicker', () => {

@@ -2,12 +2,27 @@
   "name": "@nextcloud/e2e-test-server",
   "version": "0.2.1",
   "description": "Nextcloud e2e test server and utils for cypress and playwright",
-  "publishConfig": {
-    "access": "public"
+  "keywords": [
+    "nextcloud",
+    "docker",
+    "e2e",
+    "testing",
+    "cypress",
+    "playwright",
+    "selector",
+    "plugins",
+    "library"
+  ],
+  "homepage": "https://github.com/nextcloud/nextcloud-e2e-test-server",
+  "bugs": {
+    "url": "https://github.com/nextcloud/nextcloud-e2e-test-server/issues"
   },
-  "main": "dist/index.cjs",
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nextcloud/nextcloud-e2e-test-server.git"
+  },
+  "license": "AGPL-3.0-or-later",
+  "author": "John Molakvoæ <skjnldsv@protonmail.com>",
   "exports": {
     "./commands": {
       "types": "./dist/commands/index.d.ts",
@@ -40,48 +55,25 @@
       "require": "./dist/index.cjs"
     }
   },
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
   "files": [
     "dist"
-  ],
-  "author": "John Molakvoæ <skjnldsv@protonmail.com>",
-  "contributors": [],
-  "license": "AGPL-3.0-or-later",
-  "keywords": [
-    "nextcloud",
-    "docker",
-    "e2e",
-    "testing",
-    "cypress",
-    "playwright",
-    "selector",
-    "plugins",
-    "library"
   ],
   "scripts": {
     "build": "rm -rf dist && rollup --config rollup.config.mjs",
     "build:doc": "typedoc --out dist/doc lib/commands lib/selectors lib && touch dist/doc/.nojekyll",
     "build:instrumented": "rollup --config rollup.instrumented.mjs",
-    "dev": "echo 'No dev build available, production only' && npm run build",
-    "watch": "rollup --config rollup.config.mjs --watch",
-    "test": "npm run build && playwright install chromium --only-shell && playwright test",
     "cypress": "npm run cypress:e2e && npm run cypress:component",
-    "cypress:e2e": "cypress run --e2e",
     "cypress:component": "cypress run --component",
+    "cypress:e2e": "cypress run --e2e",
     "cypress:gui": "cypress open",
-    "start:nextcloud": "node playwright/start-nextcloud-server.mjs"
+    "dev": "echo 'No dev build available, production only' && npm run build",
+    "start:nextcloud": "node playwright/start-nextcloud-server.mjs",
+    "test": "npm run build && playwright install chromium --only-shell && playwright test",
+    "watch": "rollup --config rollup.config.mjs --watch"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/nextcloud/nextcloud-cypress.git"
-  },
-  "bugs": {
-    "url": "https://github.com/nextcloud/nextcloud-cypress/issues"
-  },
-  "engines": {
-    "node": "^20.0.0",
-    "npm": "^10.0.0"
-  },
-  "homepage": "https://github.com/nextcloud/nextcloud-cypress",
   "dependencies": {
     "@nextcloud/paths": "^2.2.1",
     "dockerode": "^4.0.2",
@@ -110,5 +102,12 @@
     "typedoc": "^0.28.0",
     "typescript": "^5.4.5",
     "vue": "^2.7.16"
+  },
+  "engines": {
+    "node": "^20.0.0",
+    "npm": "^10.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
