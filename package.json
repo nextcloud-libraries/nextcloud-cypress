@@ -92,7 +92,7 @@
     "@types/dockerode": "^3.3.28",
     "@vue/cli-service": "^5.0.8",
     "@vue/tsconfig": "^0.5.1",
-    "cypress": "^13.7.2",
+    "cypress": "^15.4.0",
     "nyc": "^17.0.0",
     "rollup": "^4.14.1",
     "rollup-plugin-istanbul": "^5.0.0",
