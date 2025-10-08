@@ -78,7 +78,7 @@
     "@nextcloud/paths": "^2.2.1",
     "dockerode": "^4.0.2",
     "fast-xml-parser": "^5.2.2",
-    "wait-on": "^8.0.0"
+    "wait-on": "^9.0.1"
   },
   "devDependencies": {
     "@cypress/code-coverage": "^3.12.39",
