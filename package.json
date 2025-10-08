@@ -22,7 +22,7 @@
     "url": "git+https://github.com/nextcloud/nextcloud-e2e-test-server.git"
   },
   "license": "AGPL-3.0-or-later",
-  "author": "John Molakvoæ <skjnldsv@protonmail.com>",
+  "author": "Nextcloud GmbH and Nextcloud contributors",
   "exports": {
     "./commands": {
       "types": "./dist/commands/index.d.ts",
