@@ -16,7 +16,7 @@ describe('Login and logout', function() {
 		cy.url().should('include', '/apps/files')
 
 		cy.window().then(window => {
-			expect(window?.OC?.currentUser).to.eq(user.userId)
+			expect((window as any).OC?.currentUser).to.eq(user.userId)
 		})
 	})
 
@@ -27,7 +27,7 @@ describe('Login and logout', function() {
 		cy.url().should('include', '/apps/files')
 
 		cy.window().then(window => {
-			expect(window?.OC?.currentUser).to.eq('test1')
+			expect((window as any).OC?.currentUser).to.eq('test1')
 		})
 
 		cy.logout()
@@ -44,7 +44,7 @@ describe('Login and logout', function() {
 			cy.url().should('include', '/apps/files')
 
 			cy.window().then(window => {
-				expect(window?.OC?.currentUser).to.eq(user.userId)
+				expect((window as any).OC?.currentUser).to.eq(user.userId)
 			})
 		})
 	})

@@ -26,45 +26,45 @@
   "exports": {
     "./commands": {
       "types": "./dist/commands/index.d.ts",
-      "import": "./dist/commands/index.js",
+      "import": "./dist/commands/index.cjs",
       "require": "./dist/commands/index.cjs"
     },
     "./selectors": {
       "types": "./dist/selectors/index.d.ts",
-      "import": "./dist/selectors/index.js",
+      "import": "./dist/selectors/index.cjs",
       "require": "./dist/selectors/index.cjs"
     },
     "./docker": {
       "types": "./dist/docker.d.ts",
       "import": "./dist/docker.mjs",
-      "require": "./dist/docker.js"
+      "require": "./dist/docker.cjs"
     },
     "./cypress": {
       "types": "./dist/cypress.d.ts",
       "import": "./dist/cypress.mjs",
-      "require": "./dist/cypress.js"
+      "require": "./dist/cypress.cjs"
     },
     "./playwright": {
       "types": "./dist/playwright.d.ts",
       "import": "./dist/playwright.mjs",
-      "require": "./dist/playwright.js"
+      "require": "./dist/playwright.cjs"
     },
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
+      "import": "./dist/index.cjs",
       "require": "./dist/index.cjs"
     }
   },
   "main": "dist/index.cjs",
-  "module": "dist/index.js",
+  "module": "dist/index.cjs",
   "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "rm -rf dist && rollup --config rollup.config.mjs",
-    "build:doc": "typedoc --out dist/doc lib/commands lib/selectors lib && touch dist/doc/.nojekyll",
-    "build:instrumented": "rollup --config rollup.instrumented.mjs",
+    "build": "vite --mode production build",
+    "build:doc": "typedoc --tsconfig cypress/tsconfig.json --out dist/doc lib/commands lib/selectors lib && touch dist/doc/.nojekyll",
+    "build:instrumented": "vite --mode instrumented build",
     "cypress": "npm run cypress:e2e && npm run cypress:component",
     "cypress:component": "cypress run --component",
     "cypress:e2e": "cypress run --e2e",
@@ -72,7 +72,7 @@
     "dev": "echo 'No dev build available, production only' && npm run build",
     "start:nextcloud": "node playwright/start-nextcloud-server.mjs",
     "test": "npm run build && playwright install chromium --only-shell && playwright test",
-    "watch": "rollup --config rollup.config.mjs --watch"
+    "watch": "vite --mode production build --watch"
   },
   "dependencies": {
     "@nextcloud/paths": "^2.2.1",
@@ -83,24 +83,22 @@
   "devDependencies": {
     "@cypress/code-coverage": "^3.12.39",
     "@nextcloud/upload": "^1.1.1",
+    "@nextcloud/vite-config": "^2.5.1",
     "@nextcloud/webpack-vue-config": "^6.0.1",
     "@playwright/test": "^1.50.1",
-    "@rollup/plugin-commonjs": "^28.0.1",
-    "@rollup/plugin-node-resolve": "^16.0.0",
-    "@rollup/plugin-typescript": "^12.1.1",
     "@types/cypress": "^1.1.3",
     "@types/dockerode": "^3.3.28",
     "@vue/cli-service": "^5.0.8",
     "@vue/tsconfig": "^0.5.1",
     "cypress": "^13.7.2",
     "nyc": "^17.0.0",
-    "rollup": "^4.14.1",
     "rollup-plugin-istanbul": "^5.0.0",
     "ts-loader": "^9.5.1",
     "ts-node": "^10.9.2",
     "tslib": "^2.6.2",
     "typedoc": "^0.28.0",
     "typescript": "^5.4.5",
+    "vite": "^7.1.9",
     "vue": "^2.7.16"
   },
   "engines": {
